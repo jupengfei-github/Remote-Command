@@ -8,12 +8,13 @@ pduMetaTable.property = {
     data        = nil,
     dataSize    = 0,
     dataType    = GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT,
-    dataPath    = "",
+    dataPath    = nil,
 
     versionCode = GLOBAL_CONSTANT_FLAG.VERSION_CODE,
     versionName = GLOBAL_CONSTANT_FLAG.VERSION_NAME,
 
     msgType     = GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ,
+    flag        = GLOBAL_CONSTANT_FLAG.FLAG_NONE,
 }
 
 -- check pdu key
@@ -107,7 +108,13 @@ function pduMetaTable:get_msg_type ()
     return self.property.msgType
 end
 
+function pduMetaTable:set_flag (flag)
+    self.flag = flag or self.flag
+end
 
+function pduMetaTable:get_flag ()
+    return self.flag
+end
 
 local generate_abs_path = function (path)
     if (type(path) ~= "string" or string.len(path) == 0) then

@@ -5,16 +5,22 @@ global_constant_flag = {
 
     -- data type
     DATA_TYPE_TEXT = 0x10,
-    DATA_TYPE_DIR  = 0x11,
-    DATA_TYPE_FILE = 0x12,
-    DATA_TYPE_IMAGE= 0x13,
-    DATA_TYPE_DOC  = 0x14,
-    DATA_TYPE_CMD  = 0x15,
-    DATA_TYPE_DEF  = 0x16,
+    DATA_TYPE_CMD  = 0x11,
+    DATA_TYPE_DEF  = 0x12,
 
     -- version information
     VERSION_CODE   = "v1.0",
     VERSION_NAME   = "remoteDesk_1.0",
+
+    -- flags
+    FLAG_NEED_ACK  = 0x21,
+    FLAG_NONE      = 0x20,
+
+    -- file type
+    FILE_TYPE_DIR  = 0x30,
+    FILE_TYPE_NOR  = 0x31,
+    FILE_TYPE_IMG  = 0x32,
+    FILE_TYPE_WPS  = 0x33,
 }
 
 GLOBAL_CONSTANT_FLAG = {}
@@ -39,16 +45,24 @@ config = {
     },
 
     file_open_map = {
-        [GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT] = "notepad++",
-        [GLOBAL_CONSTANT_FLAG.DATA_TYPE_DIR]  = "explore",
-        [GLOBAL_CONSTANT_FLAG.DATA_TYPE_DEF]  = "explore",
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR] = "notepad++",
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_DIR] = "explore",
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_WPS] = "explore",
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_IMG] = "explore",
     },
 
     file_type_map = {
-        ["jpg"] = GLOBAL_CONSTANT_FLAG.DATA_TYPE_IMAGE,
-        ["png"] = GLOBAL_CONSTANT_FLAG.DATA_TYPE_IMAGE,
-        ["doc"] = GLOBAL_CONSTANT_FLAG.DATA_TYPE_DOC,
-        ["txt"] = GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT,
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR] = {
+            "txt", "html", "xml",
+        },
+
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_WPS] = {
+            "doc", "docx", "ppt",
+        },
+
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_IMG] = {
+            "jpg", "png", "bmp",
+        },
     },
 
     valid_pdu_key = {
@@ -57,7 +71,9 @@ config = {
         "msgType",
         "dataType",
         "data",
+        "dataPath",
         "dataSize",       
+        "flag",
     },
 }
 

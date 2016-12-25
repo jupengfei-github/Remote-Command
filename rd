@@ -1,8 +1,9 @@
-#!/usr/local/bin/lua
+#!/home/ubuntu/cmd_gui/bin/lua
 
 require("log")
 require("socket")
 require("pdu")
+require("util")
 
 local function get_real_path (path)
     local cur_path = os.getenv("PWD")
@@ -14,8 +15,8 @@ local function get_real_path (path)
         abs_path = cur_path.."/"..path
     end
 
-    abs_path_stack[1]  = "/"
-    abs_path_stack_len = 1
+    abs_path_stack     = {}
+    abs_path_stack_len = 0
     for file_dir in string.gmatch(abs_path, "[%a%d_-]*/") do
         if (file_dir == "../") then
             abs_path_stack_len = abs_path_stack_len <= 1 and 1 or abs_path_stack_len - 1
@@ -25,29 +26,76 @@ local function get_real_path (path)
         end
     end
 
+    local last_path = string.match(abs_path, "/[%a%d_-]*$")
+    if (last_path ~= nil) then
+        abs_path_stack[abs_path_stack_len + 1] = last_path.sub(last_path, 2, -1)
+    end
+
     return table.concat(abs_path_stack)
 end
 
--- open file on remote host
+local function get_file_type (suffix)
+    local file_type = GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR
+
+    for tp, tc in pairs(config.file_type_map) do
+        local handle = false
+
+        for k, sx in pairs(tc) do
+            if (suffix == sx) then
+                file_type = tp
+                handle    = true
+                break
+            end
+        end
+
+        if (handle == true) then 
+            break
+        end
+    end
+end
+
+local function get_remote_gui_cmd (path)
+    local cmd  = nil
+
+    if (Util.is_dir(path)) then
+        cmd = config.file_open_map[GLOBAL_CONSTANT_FLAG.FILE_TYPE_DIR]
+    else
+        local suffix = string.match("%.%a+$")
+        if (suffix) then
+            suffix = string.sub(suffix, 2, -1)
+            cmd    = config.file_open_map[get_file_type(suffix)]
+        else
+            cmd    = config.file_open_map[GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR]
+        end
+    end
+
+    return cmd
+end
+
+-- open file with remote host gui
 local function remote_desk (path)
-    local real_file = get_real_path(abs_path_stack)
+    local real_file = get_real_path(path)
     local pdu = PDU.instance(true)
 
-    pdu:set_open_file(real_file)
+    local cmd  = get_remote_gui_cmd(real_file)
+    local data = cmd.." "..real_file
+
+    pdu:init(data, GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ, nil);
+    pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NONE)
 
     local socket = Socket.client(config.server_ip)
     if (socket ~= nil) then
-        socket.send(tostring(pdu))
-        socket.close()
-    end      
+        socket:send(tostring(pdu))
+        socket:close()
+    end
 end
 
 -- excute command on remote host
 local function remote_cmd (cmd) 
     local pdu = PDU.instance(true)
-    pdu:set_msg_type(GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ)
-    pdu:set_data(cmd, string.len(cmd))
-    pdu:set_data_type(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD)
+
+    pdu:init(cmd, GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ, os.getenv("PWD"))
+    pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NEED_ACK)
 
     local socket = Socket.client(config.server_ip)
     if (socket ~= nil) then
@@ -67,24 +115,22 @@ local function remote_cmd (cmd)
     end
 end
 
-function usage () 
-return [[
-    rc <remote_command> 
-    rd <remote_open_file>
-]]
+-------------- Main Function ------------------
+if (#arg <= 0) then print([[
+        rd <command> <args>
+        rd <file>]]
+        )
 end
 
--- Main Function --
-if (#arg <= 0) then
-    print(usage())
-    return
-end
+if (#arg == 1) then
+    local path = get_real_path(arg[1])
 
-local cmd = arg[0]
-local path_or_cmd = table.concat(arg, " ")
-
-if (cmd == "rd.lua") then
-    remote_desk(path_or_cmd)
-elseif (cmd == "rc.lua") then
-    remote_cmd(path_or_cmd)
+    if (Util.is_dir(path)) then
+        print("desk")
+        remote_desk(arg[1])
+    else 
+        remote_cmd(arg[1])
+    end
+else
+    remote_cmd(table.concat(arg, " "))
 end

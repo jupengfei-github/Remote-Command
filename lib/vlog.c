@@ -139,7 +139,7 @@ static int init_file_log (void) {
     else {
         dir_name = dirname(strdup(path));
         if (dir_name != NULL && access(dir_name, F_OK))
-            mkdir(dir_name);
+            mkdir(dir_name, S_IRWXU|S_IRGRP|S_IROTH);
         
         free(dir_name);
     }

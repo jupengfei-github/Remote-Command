@@ -1,4 +1,4 @@
-#!/usr/local/bin/lua
+#!/home/ubuntu/cmd_gui/bin/lua
 
 require("socket")
 require("log")
@@ -9,27 +9,25 @@ local LOG_TAG = "rd_server"
 local function excute_command (socket, pdu)
     local cmd = pdu:get_data()
 
-    local send_data = {}
-    local file = io.popen(cmd, "r")
-    if (file == nil) then
-        Log.e("LOG_TAG", "excute_command "..cmd.." failed")
-        return
+    if (pdu:get_flag() == GLOBAL_CONSTANT_FLAG.FLAG_NONE) then
+        os.execute(cmd)
+    else
+        local send_data = {}
+        local file = io.popen(cmd, "r")
+
+        if (file == nil) then
+            send_data[1] = "excute_command "..cmd.." failed"
+        else
+            for line in file:lines(1024) do
+                send_data[#send_data + 1] = line
+            end
+        end
+
+        local send_pdu = PDU.instance()
+        send_pdu:init(table.concat(send_data), GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT, GLOBAL_CONSTANT_FLAG.MSG_TYPE_ACK, nil)
+
+        socket:send(tostring(send_pdu))
     end
-
-    for line in file:lines(1024) do
-        send_data[#send_data + 1] = line
-    end
-
-    local send_pdu = PDU.instance()
-    send_pdu:set_msg_type(GLOBAL_CONSTANT_FLAG.MSG_TYPE_ACK)
-    send_pdu:set_data(table.concat(send_data))
-    send_pdu:set_data_type(GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT)
-
-    socket:send(tostring(send_pdu))
-end
-
-local function excute_remote_desk (socket, pdu)
-    -- nothing
 end
 
 local function handle_client (socket)
@@ -41,8 +39,6 @@ local function handle_client (socket)
         if (recv_pdu:get_msg_type() == GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ) then
             if (recv_pdu:get_data_type() == GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD) then
                 excute_command(socket, recv_pdu)
-            else
-                excute_remote_desk(socket, recv_pdu)
             end
         end
     else
@@ -50,7 +46,7 @@ local function handle_client (socket)
     end
 end
 
--- Main Function --
+------------------- Main Function ------------------------
 local server_socket = Socket.server(config.server_ip)
 if (server_socket == nil) then
     Log.e(LOG_TAG, "rd_server create failed")
