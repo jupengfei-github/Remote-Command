@@ -1,0 +1,66 @@
+#!/usr/local/bin/lua
+
+require("socket")
+require("log")
+require("pdu")
+
+local LOG_TAG = "rd_server"
+
+local function excute_command (socket, pdu)
+    local cmd = pdu:get_data()
+
+    local send_data = {}
+    local file = io.popen(cmd, "r")
+    if (file == nil) then
+        Log.e("LOG_TAG", "excute_command "..cmd.." failed")
+        return
+    end
+
+    for line in file:lines(1024) do
+        send_data[#send_data + 1] = line
+    end
+
+    local send_pdu = PDU.instance()
+    send_pdu:set_msg_type(GLOBAL_CONSTANT_FLAG.MSG_TYPE_ACK)
+    send_pdu:set_data(table.concat(send_data))
+    send_pdu:set_data_type(GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT)
+
+    socket:send(tostring(send_pdu))
+end
+
+local function excute_remote_desk (socket, pdu)
+    -- nothing
+end
+
+local function handle_client (socket)
+    local recv_data = socket:recv()
+
+    if (recv_data ~= nil) then
+        local recv_pdu = PDU.parse(recv_data)
+
+        if (recv_pdu:get_msg_type() == GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ) then
+            if (recv_pdu:get_data_type() == GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD) then
+                excute_command(socket, recv_pdu)
+            else
+                excute_remote_desk(socket, recv_pdu)
+            end
+        end
+    else
+        Log.e(LOG_TAG, "rd_server receive illegal message")
+    end
+end
+
+-- Main Function --
+local server_socket = Socket.server(config.server_ip)
+if (server_socket == nil) then
+    Log.e(LOG_TAG, "rd_server create failed")
+    return 
+end
+
+repeat 
+    local socket = server_socket:listen()
+    if (socket ~= nil) then
+        handle_client(socket)
+        socket:close()
+    end
+until (false)

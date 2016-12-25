@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# root directory
+export RD_ROOT_DIR=/home/ubuntu/cmd_gui
+
+# server address
+export RD_SERVER_IP=192.168.14.119
+export RD_SERVER_PORT=62313
+
+# lua environment
+export LUA_INIT=@$RD_ROOT_DIR/init_preload.lua

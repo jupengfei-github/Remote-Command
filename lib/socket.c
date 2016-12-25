@@ -16,29 +16,32 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
+#define  LOG_TAG       ("libsocket")
+#include "vlog.c"
+
 #define  IP_LOCAL_HOST ("localhost")
 #define  IP_LOCAL_LOOP ("127.0.0.1")
 #define  SERVER_SOCKET_LENGTH 6
 #define  POLL_TIMEOUT         600
 
-int client_socket(lua_State *lua) {
+static int client_socket(lua_State *lua) {
     int sockfd;
     struct sockaddr_in addr;
-    const char *remote_ip;
+    const    char *remote_ip;
     unsigned int  remote_port;
 
     remote_ip   = (char*)luaL_checkstring(lua, 1);
     remote_port = (unsigned int)luaL_checkinteger(lua, 2);
 
     if (remote_ip == NULL || remote_port < 0 || remote_port > 65535) {
-        log_msg("fatal argument ip[%s] port[%ld]", remote_ip == NULL? "NULL" : remote_ip, remote_ip);
+        vlog("fatal argument ip[%s] port[%ld]", remote_ip == NULL? "NULL" : remote_ip, remote_ip);
         goto err;
     }
 
-    log_msg("create client socket ip[%s] port[%d]", remote_ip, remote_port);
+    vlog("create client socket ip[%s] port[%d]", remote_ip, remote_port);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        log_msg("create client socket failed %d : %s", errno, strerror(errno));
+        vlog("create client socket failed %d : %s", errno, strerror(errno));
         goto err;
     }
 
@@ -48,7 +51,7 @@ int client_socket(lua_State *lua) {
     addr.sin_addr.s_addr = inet_addr(remote_ip);
 
     if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        log_msg("connect remote socket failed %d : %s", errno, strerror(errno));
+        vlog("connect remote socket failed %d : %s", errno, strerror(errno));
         goto err;
     }
 
@@ -69,7 +72,7 @@ static int write_data (int sockfd, const char *line) {
     int error = 0;
 
     if (sockfd < 0 || line == NULL) {
-        log_msg("invalid parameters in write_data");
+        vlog("invalid parameters in write_data");
         goto err;
     }
 
@@ -80,7 +83,7 @@ static int write_data (int sockfd, const char *line) {
         if (write_len < 0 && errno == EINTR)    
             continue;
         else if (write_len == 0) {
-            log_msg("[write_data] remote socket may close");
+            vlog("[write_data] remote socket may close");
             goto err;
         }
         else if (write_len < 0)
@@ -98,7 +101,7 @@ err:
     return -1;
 }
 
-int send_data (lua_State *lua) {
+static int send_data (lua_State *lua) {
     int  sockfd;
     int len, i, j;
     int write_len = 0;
@@ -106,12 +109,12 @@ int send_data (lua_State *lua) {
 
     sockfd = (int)luaL_checkinteger(lua, 1);
     if (sockfd < 0) {
-        log_msg("invalid file fd fd[%d]", sockfd);
+        vlog("invalid file fd fd[%d]", sockfd);
         goto err;
     } 
 
     if (!lua_istable(lua, 2)) {
-        log_msg("illegal argument, second paramters must be a table ");
+        vlog("illegal argument, second paramters must be a table ");
         goto err;
     }
 
@@ -125,7 +128,6 @@ int send_data (lua_State *lua) {
             goto err;
     }
 
-
     lua_pushinteger(lua, 0);
     return 1;
 
@@ -134,7 +136,7 @@ err:
     return 1;
 }
 
-int close_socket (lua_State *lua) {
+static int close_socket (lua_State *lua) {
     int sockfd;
 
     sockfd = luaL_checkinteger(lua, 1);
@@ -150,12 +152,9 @@ static int check_ip_address (char *ip) {
     int i;
 
     if (ip == NULL) {
-        log_msg("check ip null pointer");
+        vlog("check ip null pointer");
         return -1;
     }
-
-    if (!strcmp(IP_LOCAL_HOST, ip) || !strcmp(IP_LOCAL_LOOP, ip))
-        return 0;
 
     for (i = 0; ip[i]; i++) {
         if (ip[i] != '.' && !isdigit(ip[i])) {
@@ -178,14 +177,14 @@ static int check_ip_address (char *ip) {
     }
 
     if (!valid || ip_part_cnt != 4 || ip_part <= 0 || ip_part >= 255 || !isdigit(ip[i - 1])) {
-        log_msg("check ip failed");
+        vlog("check ip failed");
         return -1;
     }
 
     return 0;
 }
 
-int server_socket (lua_State *lua) {
+static int server_socket (lua_State *lua) {
     struct sockaddr_in addr;
     int    sock_fd;
     unsigned int    port;
@@ -195,14 +194,14 @@ int server_socket (lua_State *lua) {
     port = (unsigned int)luaL_checkinteger(lua, 2);
 
     if (ip == NULL || check_ip_address(ip) || port <= 0 || port >= 65536) {
-        log_msg("illegal argument ip[%s] port[%d]", ip == NULL? "NULL" : ip, port);
+        vlog("illegal argument ip[%s] port[%d]", ip == NULL? "NULL" : ip, port);
         goto err;
     }
 
-    log_msg("create server socket ip[%s] port[%d]", ip, port);
+    vlog("create server socket ip[%s] port[%d]", ip, port);
     sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_fd < 0) {
-        log_msg("socket unexpected error %d : %s", errno, strerror(errno));
+        vlog("socket unexpected error %d : %s", errno, strerror(errno));
         goto err;
     }
 
@@ -212,12 +211,12 @@ int server_socket (lua_State *lua) {
     addr.sin_port        = htons(port);
 
     if (bind(sock_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        log_msg("bind unexpected error %d : %s", errno, strerror(errno));
+        vlog("bind unexpected error %d : %s", errno, strerror(errno));
         goto err1;
     }
 
     if (listen(sock_fd, SERVER_SOCKET_LENGTH) < 0) {
-        log_msg("listen unexpected error %d : %s", errno, strerror(errno));
+        vlog("listen unexpected error %d : %s", errno, strerror(errno));
         goto err1;
     }
 
@@ -231,33 +230,35 @@ err:
     return 1;
 }
 
-int recv_data  (lua_State *lua) {
+static int recv_data  (lua_State *lua) {
     int  write_len = 0, ret, num = 0;
     char data[1024];
-    char index[2] = {'1', '\0'};
+    int index = 1;
     int sockfd;
 
     sockfd = luaL_checkinteger(lua, 1);
     if (sockfd < 0) {
-        log_msg("invalid socket fd [%d]", sockfd);
+        vlog("invalid socket fd [%d]", sockfd);
         goto err;
     }
 
     lua_newtable(lua);
     while (1) {
         ret = read(sockfd, data, 1024);
-        log_msg("read data %s : %d", data, ret);
+        vlog("read data %s : %d", data, ret);
 
         if (ret < 0 && (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN))
             continue;
         else if (ret <= 0) {
-            log_msg("receive data error %d : %s, remote socket may close", errno, strerror(errno));
+            vlog("receive data error %d : %s, remote socket may close", errno, strerror(errno));
             goto err;
         }
 
-        index[1]++;
+	if (ret < 1024)
+	    data[ret] = '\0';
+
         lua_pushstring(lua, data);
-        lua_setfield(lua, -2, index);
+        lua_rawseti(lua, -2, index++);
 
         write_len += ret;
         num++;
@@ -266,30 +267,31 @@ int recv_data  (lua_State *lua) {
             break;
     }
 
-    close(sockfd);
     lua_pushinteger(lua, write_len);
     return 2;
 
 err:
-    lua_pushinteger(lua, -1);
+    lua_pop(lua, 1);
+    lua_pushnil(lua);
     return 1;
 }
 
-int listen_connect (lua_State *lua) {
+static int listen_connect (lua_State *lua) {
     struct pollfd fds[1];
     struct sockaddr_in addr;
     int sockfd, len, new_sockfd;
 
     sockfd = (int)luaL_checkinteger(lua, 1);
     if (sockfd < 0) {
-        log_msg("invalid socket fd [%d]", sockfd);
+        vlog("invalid socket fd [%d]", sockfd);
         goto err;
     }
 
     bzero(&addr, sizeof(addr));
+    len = sizeof(addr);
     new_sockfd = accept(sockfd, (struct sockaddr*)&addr, &len);
     if (new_sockfd < 0) {
-        log_msg("accpet error found %d : %s", errno, strerror(errno));
+        vlog("accpet error found %d : %s", errno, strerror(errno));
         goto err;
     }
 
@@ -301,7 +303,7 @@ err:
     return 1;
 }
 
-int listen_socket (lua_State *lua) {
+static int listen_socket (lua_State *lua) {
     struct pollfd fds[1];
     int poll_ret;
     int sockfd;
@@ -309,7 +311,7 @@ int listen_socket (lua_State *lua) {
 
     sockfd = (int)luaL_checkinteger(lua, 1);
     if (sockfd < 0) {
-        log_msg("invalid socket fd [%d]", sockfd);
+        vlog("invalid socket fd [%d]", sockfd);
         return -1;
     }
 
@@ -322,6 +324,22 @@ int listen_socket (lua_State *lua) {
     else
         lua_pushinteger(lua, -1);
 
+    return 1;
+}
+
+int luaopen_libsocket (lua_State *lua) {
+    struct luaL_Reg method[] = {
+        {"server_socket", server_socket},
+        {"client_socket", client_socket},
+        {"close_socket",  close_socket},
+        {"send_data",     send_data},
+        {"recv_data",     recv_data},
+        {"listen_connect",listen_connect},
+        {"listen_socket", listen_socket},
+        {NULL, NULL}
+    };
+
+    luaL_newlib(lua, method);
     return 1;
 }
 
