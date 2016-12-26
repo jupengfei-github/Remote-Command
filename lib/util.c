@@ -20,16 +20,16 @@ static int is_dir (lua_State *lua_state) {
 
     if (path == NULL || stat(path, &pstat)) {
         vlog("is_dir found error %d : %s", errno, strerror(errno));
-        lua_pushinteger(lua_state, -1);
+        lua_pushboolean(lua_state, 0);
         goto error;
     }
     else
         vlog("is_dir : %s", path);
 
     if (pstat.st_mode == S_IFDIR)
-        lua_pushinteger(lua_state, 1);
+        lua_pushboolean(lua_state, 1);
     else
-        lua_pushinteger(lua_state, 0);
+        lua_pushboolean(lua_state, 0);
 
 error:
 

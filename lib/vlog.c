@@ -35,11 +35,11 @@ typedef enum _BOOL {
 /* logsystem we use. we support syslog and file_log in linux
  * and only file_log in windows 
  */
-static BOOL use_sys_log = FALSE, use_file_log =  TRUE;
+static BOOL use_sys_log = FALSE, use_file_log =  FALSE;
 static int sys_log_fd  = -1,    file_log_fd  = -1;
 
 /* file log path */
-static char FILE_LOG_PATH[100] = {0};
+static char FILE_LOG_PATH[100] = {"~/.cmd_gui.log"};
 
 /* weather close log once log finished everytime */
 static BOOL close_log_once = FALSE;
@@ -141,7 +141,7 @@ static int init_file_log (void) {
         if (dir_name != NULL && access(dir_name, F_OK))
             mkdir(dir_name, S_IRWXU|S_IRGRP|S_IROTH);
         
-        free(dir_name);
+       // free(dir_name);
     }
 
 new_file:
@@ -209,7 +209,7 @@ static void log_msg (char *tag, char *msg) {
         handle = TRUE;
     }
 
-    if (use_file_log == TRUE && (file_log_fd < 0 || !init_file_log())) {
+    if (use_file_log == TRUE && (file_log_fd >= 0 || !init_file_log())) {
         file_log(tag, msg);
         handle = TRUE;
     }
