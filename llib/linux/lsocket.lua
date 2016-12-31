@@ -1,17 +1,13 @@
-require("log")
-
+local Log       = require("log")
 local libsocket = require("libsocket")
 
-local default_ip_address = "localhost"
-local default_ip_port    = 32133
-local LOG_TAG            = "Socket"
+local LOG_TAG   = "Socket"
 
 local socket_metatable = {}
-
 local function create_socket (sk)
     local socket = sk or {
-        ipaddr = default_ip_address,
-        ipport = default_ip_port,
+        ipaddr = nil,
+        ipport = nil,
         fd     = -1,
         server = true
     }
@@ -22,13 +18,13 @@ local function create_socket (sk)
     return socket
 end
 
-Socket = {}
+local Socket = {}
 function Socket.server (ip, port)
     local ipaddr, ipport
     local fd
 
-    ipaddr = ip   == nil and  default_ip_address or ip
-    ipport = port == nil and  default_ip_port    or port
+    ipaddr = assert(ip)
+    ipport = assert(port)
 
     Log.d(LOG_TAG, "create server socket ["..ipaddr.." "..ipport.."]")
     fd = libsocket.server_socket(ipaddr, ipport)
@@ -50,8 +46,8 @@ function Socket.client (ip, port)
     local ipaddr, ipport
     local fd
 
-    ipaddr = ip   == nil and default_ip_address or ip
-    ipport = port == nil and default_ip_port    or port
+    ipaddr = assert(ip)
+    ipport = assert(port)
 
     Log.d(LOG_TAG, "create client socket ["..ipaddr.." "..ipport.."]")
     fd = libsocket.client_socket(ipaddr, ipport)
@@ -76,7 +72,7 @@ end
 
 function socket_metatable:send (msg)
     if (msg ~= nil and self.server == false) then
-        local msg_table = {msg}
+        local msg_table = {msg.."\n"}
         libsocket.send_data(self.fd, msg_table)
     else
         Log.d(LOG_TAG, "must be client socket")
@@ -121,3 +117,5 @@ function socket_metatable:listen ()
         return nil
     end
 end
+
+return Socket

@@ -1,18 +1,13 @@
-#!/bin/bash
-
 # root directory
-export RD_ROOT_DIR=/home/ubuntu/cmd_gui
+export RD_ROOT_DIR=/opt/jupengfei/cmd_gui
+export HOST_OS=linux
 
 # server address
-export RD_SERVER_IP=192.168.14.119
-export RD_SERVER_PORT=62313
+export RD_SERVER_IP=192.168.14.171
+export RD_SERVER_PORT=30130
 
 # lua environment
-export LUA_INIT=@$RD_ROOT_DIR/init_preload.lua
+export LUA_INIT=@$RD_ROOT_DIR/lua_init.lua
 
 # set lua parse position
-LOCAL_EXECUTE_LUA="rd rd_server"
-
-for file in `echo $LOCAL_EXECUTE_LUA`; do
-    sed -i "1c#!$RD_ROOT_DIR/bin/lua" $file
-done
+export LUA_EXE=$RD_ROOT_DIR/bin/linux/lua

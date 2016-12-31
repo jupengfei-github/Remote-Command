@@ -1,4 +1,4 @@
-global_constant_flag = {
+local global_constant_flag = {
     -- message type
     MSG_TYPE_REQ = 0x00,
     MSG_TYPE_ACK = 0x01,
@@ -36,17 +36,17 @@ setmetatable(GLOBAL_CONSTANT_FLAG, {
 
 config = {
     -- server ip
-    server_ip   = "192.168.14.119",
-    server_port = 62323, 
+    server_ip   = "192.168.14.171",
+    server_port = 30130, 
 
     -- map table
     shared_map = {
-        ["/home/ubuntu"] = "z:",
+        ["/opt/jupengfei"] = "z:",
     },
 
     file_open_map = {
         [GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR] = "notepad++",
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_DIR] = "explore",
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_DIR] = "explorer",
         [GLOBAL_CONSTANT_FLAG.FILE_TYPE_WPS] = "explore",
         [GLOBAL_CONSTANT_FLAG.FILE_TYPE_IMG] = "explore",
     },
@@ -80,7 +80,7 @@ config = {
 local function check_ip_valid (ip) 
     local pattern = "%d+%.%d+%.%d%.%d+"
 
-    if (not string.match(ip, pattern)) then
+    if (ip == nil or not string.match(ip, pattern)) then
         return false
     end
 
@@ -94,7 +94,7 @@ local function check_ip_valid (ip)
 end
 
 local function check_port_valid (port)
-    if (port > 0 and port < 65535) then
+    if (port ~= nil and port > 0 and port < 65535) then
         return true
     else
         return false

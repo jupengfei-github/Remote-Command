@@ -28,10 +28,10 @@ static int client_socket(lua_State *lua) {
     int sockfd;
     struct sockaddr_in addr;
     const    char *remote_ip;
-    unsigned int  remote_port;
+    unsigned long  remote_port;
 
     remote_ip   = (char*)luaL_checkstring(lua, 1);
-    remote_port = (unsigned int)luaL_checkinteger(lua, 2);
+    remote_port = (unsigned long)luaL_checknumber(lua, 2);
 
     if (remote_ip == NULL || remote_port < 0 || remote_port > 65535) {
         vlog("fatal argument ip[%s] port[%ld]", remote_ip == NULL? "NULL" : remote_ip, remote_ip);
@@ -50,6 +50,7 @@ static int client_socket(lua_State *lua) {
     addr.sin_port   = htons(remote_port);
     addr.sin_addr.s_addr = inet_addr(remote_ip);
 
+    vlog("conenct remote host : %s : %ld", remote_ip, remote_port);
     if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
         vlog("connect remote socket failed %d : %s", errno, strerror(errno));
         goto err;
@@ -245,17 +246,20 @@ static int recv_data  (lua_State *lua) {
     lua_newtable(lua);
     while (1) {
         ret = read(sockfd, data, 1024);
-        vlog("read data %s : %d", data, ret);
 
         if (ret < 0 && (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN))
             continue;
-        else if (ret <= 0) {
-            vlog("receive data error %d : %s, remote socket may close", errno, strerror(errno));
+        else if (ret < 0) {
+            vlog("receive data error %d : %s", errno, strerror(errno));
+            goto err;
+        }
+        else {
+            vlog("error, remote socket may close");
             goto err;
         }
 
-	if (ret < 1024)
-	    data[ret] = '\0';
+	    if (ret < 1024)
+	        data[ret] = '\0';
 
         lua_pushstring(lua, data);
         lua_rawseti(lua, -2, index++);

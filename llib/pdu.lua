@@ -1,4 +1,4 @@
-require ("log")
+Log    = require ("log")
 
 local LOG_TAG = "PDU"
 
@@ -28,8 +28,7 @@ local is_valid_key = function (key)
     return false
 end
 
-PDU = {}
-
+local PDU = {}
 -- create new empty PDU data
 -- fill : weather set default data
 function PDU.instance (fill) 
@@ -55,11 +54,11 @@ function PDU.parse (msg)
     local pdu = PDU.instance(false)
 
     for k, key in pairs(config.valid_pdu_key) do
-        local si, ei = string.find(msg, " "..key.." ")
+        local si, ei = string.find(msg, key..":")
 
         if (si) then
             local start = string.find(msg, "%w", ei + 1)
-            local endd  = string.find(msg, "\n\n", ei + 1)
+            local endd  = string.find(msg, "\t", ei + 1)
 
             if (start and endd) then
                 local tmp = string.sub(msg, start, endd - 1)
@@ -188,9 +187,11 @@ function pduMetaTable:__tostring ()
 
     for k, v in pairs(self.property) do
         if (v ~= nil) then
-            msg = " "..k.." : "..v.."\n\n"..msg
+            msg = k..":"..v.."\t"..msg
         end
     end
 
     return msg
 end
+
+return PDU

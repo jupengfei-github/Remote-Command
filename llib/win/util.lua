@@ -1,10 +1,12 @@
-util = require("libutil")
+local util = require("libutil")
 
-Util = {}
+local Util = {}
 function Util.is_dir (path)
     if (path == nil or type(path) ~= "string") then
         return false
     end
 
-    return util.is_dir(path)
+    return not util.is_dir(path)
 end
+
+return Util

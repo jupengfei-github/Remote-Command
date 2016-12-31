@@ -1,11 +1,11 @@
-vlog = require("liblog")
+local vlog = require("liblog")
 
 local function log_detail (tag, level, msg)
     local msg = level .. " "..msg
     vlog.log (tag, msg)
 end
 
-Log = {}
+local Log = {}
 function Log.d (tag, msg)
     log_detail (tag, "DEBUG", msg)
 end
@@ -21,3 +21,5 @@ end
 function Log.v (tag, msg)
     log_detail (tag, "VERBOSE", msg)
 end
+
+return Log
