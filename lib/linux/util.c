@@ -24,10 +24,12 @@ static int is_dir (lua_State *lua_state) {
         goto error;
     }
     else
-        vlog("is_dir : %s", path);
 
-    if (pstat.st_mode == S_IFDIR)
+
+    if (pstat.st_mode & S_IFDIR) {
+        vlog("is_dir : %s", path);
         lua_pushboolean(lua_state, 1);
+    }
     else
         lua_pushboolean(lua_state, 0);
 

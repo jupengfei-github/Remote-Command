@@ -72,7 +72,11 @@ end
 
 function socket_metatable:send (msg)
     if (msg ~= nil and self.server == false) then
-        local msg_table = {msg.."\n"}
+        local msg_table = {
+            msg,
+            "\n",  --compatibal for windows
+        }
+
         libsocket.send_data(self.fd, msg_table)
     else
         Log.d(LOG_TAG, "must be client socket")
@@ -87,7 +91,8 @@ function socket_metatable:recv ()
 
     local tb = libsocket.recv_data (self.fd)
     if (tb ~= nil) then
-        return table.concat(tb)
+        local msg = table.concat(tb)
+        return string.sub(msg, 1, #msg - 1)  --compatibal for windows
     else
         return nil
     end

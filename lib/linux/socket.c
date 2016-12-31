@@ -81,16 +81,18 @@ static int write_data (int sockfd, const char *line) {
     while (1) {
         write_len = write(sockfd, line, remain_len);
 
-        if (write_len < 0 && errno == EINTR)    
+        if (write_len <= 0 && errno == EINTR)    
             continue;
-        else if (write_len == 0) {
-            vlog("[write_data] remote socket may close");
+        else if(write_len < 0) {
+            vlog("[write_data] failed %d : %s", errno, strerror(errno));
             goto err;
         }
-        else if (write_len < 0)
+        else if(write_len == 0) {
+            vlog("[write_data] remote socket may close %d : %s", errno, strerror(errno));
             goto err;
+        }
 
-        if (write_len <= remain_len)
+        if (write_len == remain_len)
             break;
 
         remain_len -= write_len;
@@ -118,7 +120,6 @@ static int send_data (lua_State *lua) {
         vlog("illegal argument, second paramters must be a table ");
         goto err;
     }
-
 
     lua_pushnil(lua);
     while (lua_next(lua, 2) != 0) {
@@ -253,8 +254,8 @@ static int recv_data  (lua_State *lua) {
             vlog("receive data error %d : %s", errno, strerror(errno));
             goto err;
         }
-        else {
-            vlog("error, remote socket may close");
+        else if(ret == 0){
+            vlog("[recv_data] error, remote socket may close %d : %s", errno, strerror(errno));
             goto err;
         }
 

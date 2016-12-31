@@ -121,6 +121,7 @@ local function remote_cmd (cmd)
     local socket = Socket.client(config.server_ip, config.server_port)
     if (socket ~= nil) then
         socket:send(tostring(pdu))
+        print(tostring(pdu))
 
         local recv_data = socket:recv()
         if (recv_data ~= nil) then
@@ -148,9 +149,7 @@ end
 if (#arg == 1) then
     local path = get_real_path(arg[1])
     
-    print(path)
     if (Util.is_dir(path)) then
-        print("desk")
         remote_desk(arg[1])
     else 
         remote_cmd(arg[1])

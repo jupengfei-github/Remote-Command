@@ -78,19 +78,23 @@ config = {
 }
 
 local function check_ip_valid (ip) 
-    local pattern = "%d+%.%d+%.%d%.%d+"
+    local pattern = "^%d+%.%d+%.%d+%.%d+$"
 
     if (ip == nil or not string.match(ip, pattern)) then
         return false
     end
 
+
     local valid = true
     for ele in string.gmatch(ip, "%d+") do
-        if (ele <= 0 or ele >= 255 ) then
+        local num = tonumber(ele)
+        if (num <= 0 or num >= 255 ) then
             valid = false
             break
         end
-    end
+    end 
+
+    return valid
 end
 
 local function check_port_valid (port)

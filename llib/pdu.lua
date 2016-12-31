@@ -187,7 +187,7 @@ function pduMetaTable:__tostring ()
 
     for k, v in pairs(self.property) do
         if (v ~= nil) then
-            msg = k..":"..v.."\t"..msg
+            msg = k..":"..v.."\t "..msg
         end
     end
 

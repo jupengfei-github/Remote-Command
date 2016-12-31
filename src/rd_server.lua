@@ -7,6 +7,7 @@ local LOG_TAG = "rd_server"
 local function excute_command (socket, pdu)
     local cmd = pdu:get_data()
 
+    print(tostring(pdu))
     if (pdu:get_flag() == GLOBAL_CONSTANT_FLAG.FLAG_NONE) then
         os.execute(cmd)
     else
