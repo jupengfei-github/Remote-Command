@@ -20,7 +20,6 @@ end
 
 local function excute_command (socket, pdu)
     local cmd, cmd_args = pdu:get_cmd()
-    local command = get_local_command(cmd).." "..cmd_args
     local os      = os.getenv("HOST_OS")
 
     if (os == "win") then
@@ -29,6 +28,7 @@ local function excute_command (socket, pdu)
         cmd_args = string.gsub(cmd_args, "\\", "/")
     end
 
+    local command = get_local_command(cmd).." "..cmd_args
     print(pdu, command)
 
     if (pdu:get_flag() == GLOBAL_CONSTANT_FLAG.FLAG_NONE) then
