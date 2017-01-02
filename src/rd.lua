@@ -88,6 +88,21 @@ local function get_share_path (path)
     return new_path
 end
 
+-- excute command
+local function execute_cmd (cmd, args, cmd_path) 
+    local pdu = CMD_PDU.instance(PDU.instance(true))
+
+    pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ)
+    pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NEED_NONE)
+    pdu:set_cmd(cmd, args, cmd_path)
+
+    local socket = Socket.client(config.server_ip, config.server_port)
+    if (socket ~= nil) then
+        socket:send(tostring(pdu))
+        socket:close()
+    end
+end
+
 -- open file with remote host gui
 local function remote_desk (path)
     local share_file = get_share_path(path)
@@ -98,44 +113,20 @@ local function remote_desk (path)
         return
     end
 
-    local pdu  = CMD_PDU.instance(PDU.instance(true))
-    pdu:set_cmd(cmd, share_file)
-    pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ, nil);
-    pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NONE)
-
-    local socket = Socket.client(config.server_ip, config.server_port)
-    if (socket ~= nil) then
-        socket:send(tostring(pdu))
-        socket:close()
-    end
+    execute_cmd(cmd, share_file)
 end
 
--- excute command on remote host
-local function remote_cmd (cmd, args) 
-    local pdu = CMD_PDU.instance(PDU.instance(true))
+local function remote_cmd (tb)
+    local cmd  = tb[1]
+    local args = nil 
 
-    pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ)
-    pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NEED_ACK)
-    pdu:set_cmd(cmd, args)
+    table.remove(tb, 1)
+    args = table.concat(tb, " ")
 
-    print(pdu)
+    local local_path = get_real_path(".")
+    local share_path = get_share_path(local_path)
 
-    local socket = Socket.client(config.server_ip, config.server_port)
-    if (socket ~= nil) then
-        socket:send(tostring(pdu))
-
-        local recv_data = socket:recv()
-        if (recv_data ~= nil) then
-            local recv_pdu = PDU.parse(recv_data) 
-
-            if (recv_pdu:get_msg_type() == GLOBAL_CONSTANT_FLAG.MSG_TYPE_ACK) then
-                local d = recv_pdu:get_data()
-                print(d)
-            end
-        end
-
-        socket:close()
-    end
+    execute_cmd(cmd, args, share_path)
 end
 
 -------------- Main Function ------------------
@@ -147,19 +138,16 @@ if (#arg <= 0) then
     return
 end
 
+local handle = false
 if (#arg == 1) then
     local path = get_real_path(arg[1])
-    
+
     if (Util.is_dir(path) or Util.is_file(path)) then
         remote_desk(path)
-    else 
-        remote_cmd(arg[1])
+        handle = true
     end
-else
-    local cmd  = arg[1]
-    local args = nil 
+end
 
-    table.remove(arg, 1)
-    args = table.concat(arg, " ")
-    remote_cmd(cmd, args)
+if (handle == false) then
+    remote_cmd(arg)
 end

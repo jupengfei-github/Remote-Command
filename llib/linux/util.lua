@@ -6,11 +6,15 @@ function Util.is_dir (path)
         return false
     end
 
-    return util.is_dir(path)
+    return util.file_type(path) == 1
 end
 
 function Util:is_file (path)
-    return true
+    if (path == nil or type(path) ~= "string") then
+        return false
+    end
+
+    return util.file_type(path) == 2
 end
 
 return Util

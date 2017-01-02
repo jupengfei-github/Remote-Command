@@ -5,30 +5,45 @@ local CMD_PDU = require("cmd_pdu")
 
 local LOG_TAG = "rd_server"
 
-local function get_local_command (cmd)
-        local target_cmd = cmd
-
-        for remote_cmd, local_cmd in pairs(config.command_map) do
-            if (rmeote_cmd == cmd) then
-                target_cmd = local_cmd
-            break
-        end
-    end
-
-    return target_cmd
-end
-
-local function excute_command (socket, pdu)
-    local cmd, cmd_args = pdu:get_cmd()
-    local os      = os.getenv("HOST_OS")
+local function get_local_command (cmd, cmd_args, cmd_path)
+    local os  = os.getenv("HOST_OS")
+    local ext_command, pre_command , target_cmd = "", "", ""
 
     if (os == "win") then
         cmd_args = string.gsub(cmd_args, "/", "\\")
+        cmd_path = string.gsub(cmd_path, "/", "\\")
+        ext_command = "start /b "
     elseif (os == "linux") then
         cmd_args = string.gsub(cmd_args, "\\", "/")
+        cmd_path = string.gsub(cmd_path, "\\", "/")
+        ext_command = " & "
     end
 
-    local command = get_local_command(cmd).." "..cmd_args
+    ext_command = ""
+
+    if (cmd_path and #cmd_path > 0) then
+        if (os == "win") then
+            pre_command = "cd /d "..cmd_path.." & "
+        else
+            pre_command = "cd "..cmd_path..";"
+        end
+    end
+
+    target_cmd = config.command_map[cmd]
+    target_cmd = target_cmd or cmd
+
+    local command = ""
+    if (os == "win") then
+        command = ext_command..pre_command..target_cmd.." "..cmd_args
+    else
+        command = pre_command..target_cmd.." "..cmd_args..ext_command
+    end
+
+    return command
+end
+
+local function excute_command (socket, pdu)
+    local command = get_local_command(pdu:get_cmd())
     print(pdu, command)
 
     if (pdu:get_flag() == GLOBAL_CONSTANT_FLAG.FLAG_NONE) then

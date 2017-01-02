@@ -12,35 +12,34 @@
 #define  LOG_TAG  ("libutil")
 #include "vlog.c"
 
-static int is_dir (lua_State *lua_state) {
+static int file_type (lua_State *lua_state) {
     struct stat pstat;
     const char  *path  = NULL;
 
     path = luaL_checkstring(lua_state, -1);
 
     if (path == NULL || stat(path, &pstat)) {
-        vlog("is_dir found error %d : %s", errno, strerror(errno));
-        lua_pushboolean(lua_state, 0);
+        vlog("get file stat error %d : %s", errno, strerror(errno));
+        lua_pushinteger(lua_state, -1);
         goto error;
     }
-    else
 
-
-    if (pstat.st_mode & S_IFDIR) {
-        vlog("is_dir : %s", path);
-        lua_pushboolean(lua_state, 1);
-    }
+    if (pstat.st_mode & S_IFDIR)
+        lua_pushinteger(lua_state, 1);
+    else if(pstat.st_mode & S_IFREG)
+        lua_pushinteger(lua_state, 2);
+    else if(pstat.st_mode & S_IFLNK)
+        lua_pushinteger(lua_state, 3);
     else
-        lua_pushboolean(lua_state, 0);
+        lua_pushinteger(lua_state, -1);
 
 error:
-
     return 1;
 } 
 
 int luaopen_libutil (lua_State *lua_state) {
     struct luaL_Reg method[] = {
-        {"is_dir",  is_dir},
+        {"file_type",  file_type},
         {NULL, NULL}
     };
 
