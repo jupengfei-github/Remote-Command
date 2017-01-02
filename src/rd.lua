@@ -18,7 +18,7 @@ local function get_real_path (path)
 
     abs_path_stack     = {}
     abs_path_stack_len = 0
-    for file_dir in string.gmatch(abs_path, "[%a%d_-]*/") do
+    for file_dir in string.gmatch(abs_path, "[%a%d_-%.]*/") do
         if (file_dir == "../") then
             abs_path_stack_len = abs_path_stack_len <= 1 and 1 or abs_path_stack_len - 1
         else
