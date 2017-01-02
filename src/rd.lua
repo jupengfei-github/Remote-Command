@@ -1,7 +1,8 @@
-local Log    = require("log")
-local Socket = require("lsocket")
-local PDU    = require("pdu")
-local Util   = require("util")
+local Log     = require("log")
+local Socket  = require("lsocket")
+local CMD_PDU = require("cmd_pdu")
+local PDU     = require("pdu")
+local Util    = require("util")
 
 local LOG_TAG = "rd_client"
 
@@ -96,13 +97,12 @@ local function remote_desk (path)
         return
     end
 
-    local pdu = PDU.instance(true)
-    local data = cmd.." "..share_file
-
-    print(data)
-
-    pdu:init(data, GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ, nil);
+    local pdu  = CMD_PDU.instance(PDU.instance(true))
+    pdu.set_cmd(cmd, share_file)
+    pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ, nil);
     pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NONE)
+
+    print(pdu)
 
     local socket = Socket.client(config.server_ip, config.server_port)
     if (socket ~= nil) then
@@ -112,16 +112,18 @@ local function remote_desk (path)
 end
 
 -- excute command on remote host
-local function remote_cmd (cmd) 
-    local pdu = PDU.instance(true)
+local function remote_cmd (cmd, args) 
+    local pdu = CMD_PDU.instance(PDU.instance(true))
 
-    pdu:init(cmd, GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ, os.getenv("PWD"))
+    pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ)
     pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NEED_ACK)
+    pdu:set_cmd(cmd, args)
+
+    print(pdu)
 
     local socket = Socket.client(config.server_ip, config.server_port)
     if (socket ~= nil) then
         socket:send(tostring(pdu))
-        print(tostring(pdu))
 
         local recv_data = socket:recv()
         if (recv_data ~= nil) then
@@ -155,5 +157,10 @@ if (#arg == 1) then
         remote_cmd(arg[1])
     end
 else
-    remote_cmd(table.concat(arg, " "))
+    local cmd  = arg[1]
+    local args = nil 
+
+    table.remove(arg, 1)
+    args = table.concat(arg, " ")
+    remote_cmd(cmd, args)
 end

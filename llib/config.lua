@@ -6,7 +6,6 @@ local global_constant_flag = {
     -- data type
     DATA_TYPE_TEXT = 0x10,
     DATA_TYPE_CMD  = 0x11,
-    DATA_TYPE_DEF  = 0x12,
 
     -- version information
     VERSION_CODE   = "v1.0",
@@ -66,14 +65,19 @@ config = {
     },
 
     valid_pdu_key = {
-        "versionCode",
-        "versionName",
-        "msgType",
-        "dataType",
-        "data",
-        "dataPath",
-        "dataSize",       
-        "flag",
+        "versionCode",  "versionName", "msgType", "dataType", "data", "dataPath",
+        "dataSize", "flag",
+    },
+
+    valid_cmd_pdu_key = {
+        "cmd", "cmd_params", "cmd_path",
+    },
+
+    command_map = {
+        notepad    = "C:\\Program Files (x86)\\Notepad++\\notepad++.exe",
+        sublime    = "C:\\Program Files\\Sublime Text 3\\sublime_text.exe",
+        search     = "C:\\Program Files\\Everything\\Everything.exe",
+        compare    = "C:\\Program Files (x86)\\Beyond Compare 4\\BCompare.exe",
     },
 }
 
@@ -83,7 +87,6 @@ local function check_ip_valid (ip)
     if (ip == nil or not string.match(ip, pattern)) then
         return false
     end
-
 
     local valid = true
     for ele in string.gmatch(ip, "%d+") do

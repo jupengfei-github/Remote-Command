@@ -3,7 +3,7 @@ export RD_ROOT_DIR=/home/ubuntu/cmd_gui
 export HOST_OS=linux
 
 # server address
-export RD_SERVER_IP=192.168.14.171
+export RD_SERVER_IP=192.168.14.119
 export RD_SERVER_PORT=30123
 
 # lua environment

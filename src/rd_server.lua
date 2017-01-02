@@ -1,18 +1,41 @@
 local Socket  = require("lsocket")
 local Log     = require("log")
 local PDU     = require("pdu")
+local CMD_PDU = require("cmd_pdu")
 
 local LOG_TAG = "rd_server"
 
-local function excute_command (socket, pdu)
-    local cmd = pdu:get_data()
+local function get_local_command (cmd)
+        local target_cmd = cmd
 
-    print(tostring(pdu))
+        for remote_cmd, local_cmd in pairs(config.command_map) do
+            if (rmeote_cmd == cmd) then
+                target_cmd = local_cmd
+            break
+        end
+    end
+
+    return target_cmd
+end
+
+local function excute_command (socket, pdu)
+    local cmd, cmd_args = pdu:get_cmd()
+    local command = get_local_command(cmd).." "..cmd_args
+    local os      = os.getenv("HOST_OS")
+
+    if (os == "win") then
+        cmd_args = string.gsub(cmd_args, "/", "\\")
+    elseif (os == "linux") then
+        cmd_args = string.gsub(cmd_args, "\\", "/")
+    end
+
+    print(pdu, command)
+
     if (pdu:get_flag() == GLOBAL_CONSTANT_FLAG.FLAG_NONE) then
-        os.execute(cmd)
+        os.execute(command)
     else
         local send_data = {}
-        local file = io.popen(cmd, "r")
+        local file = io.popen(command, "r")
 
         if (file == nil) then
             send_data[1] = "excute_command "..cmd.." failed"
@@ -23,8 +46,8 @@ local function excute_command (socket, pdu)
         end
 
         local send_pdu = PDU.instance()
-        send_pdu:init(table.concat(send_data), GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT, GLOBAL_CONSTANT_FLAG.MSG_TYPE_ACK, nil)
-
+        send_pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT, GLOBAL_CONSTANT_FLAG.MSG_TYPE_ACK, nil)
+        send_pdu:set_data(table.concat(send_data))
         socket:send(tostring(send_pdu))
     end
 end
@@ -37,7 +60,7 @@ local function handle_client (socket)
 
         if (recv_pdu:get_msg_type() == GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ) then
             if (recv_pdu:get_data_type() == GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD) then
-                excute_command(socket, recv_pdu)
+                excute_command(socket, CMD_PDU.parse(recv_pdu))
             end
         end
     else

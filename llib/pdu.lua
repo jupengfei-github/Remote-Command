@@ -1,17 +1,18 @@
-Log    = require ("log")
+Log = require ("log")
 
-local LOG_TAG = "PDU"
+local LOG_TAG       = "PDU"
+local PDU_DELIMETER = "\t "
+local PDU_KEYVALUE  = ":"
 
 local pduData = {}
 local pduMetaTable = {}
 pduMetaTable.property = {
+    versionCode = GLOBAL_CONSTANT_FLAG.VERSION_CODE,
+    versionName = GLOBAL_CONSTANT_FLAG.VERSION_NAME,
+
     data        = nil,
     dataSize    = 0,
     dataType    = GLOBAL_CONSTANT_FLAG.DATA_TYPE_TEXT,
-    dataPath    = nil,
-
-    versionCode = GLOBAL_CONSTANT_FLAG.VERSION_CODE,
-    versionName = GLOBAL_CONSTANT_FLAG.VERSION_NAME,
 
     msgType     = GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ,
     flag        = GLOBAL_CONSTANT_FLAG.FLAG_NONE,
@@ -54,11 +55,11 @@ function PDU.parse (msg)
     local pdu = PDU.instance(false)
 
     for k, key in pairs(config.valid_pdu_key) do
-        local si, ei = string.find(msg, key..":")
+        local si, ei = string.find(msg, key..PDU_KEYVALUE)
 
         if (si) then
             local start = string.find(msg, "%w", ei + 1)
-            local endd  = string.find(msg, "\t", ei + 1)
+            local endd  = string.find(msg, PDU_DELIMETER, ei + 1)
 
             if (start and endd) then
                 local tmp = string.sub(msg, start, endd - 1)
@@ -75,11 +76,9 @@ function PDU.parse (msg)
     return pdu
 end
 
-function pduMetaTable:init (data, dataType, msgType, dataPath)
-    self:set_data(data)
+function pduMetaTable:init (dataType, msgType)
     self:set_data_type(dataType)
     self:set_msg_type(msgType)
-    self:set_data_path(dataPath)
 end
 
 function pduMetaTable:set_data (data, len)
@@ -115,79 +114,16 @@ function pduMetaTable:get_flag ()
     return self.flag
 end
 
-local generate_abs_path = function (path)
-    if (type(path) ~= "string" or string.len(path) == 0) then
-        return nil
-    end
-
-    local path_pattern = "^/?[a-z0-9_A-Z](/[a-z0-9_A-Z])*/?$"
-    if (not string.match(path, path_pattern)) then
-        Log.e(LOG_TAG, "illegal file path "..path)
-        return nil
-    end
-
-    if (string.sub(path, 1, 1) == "/") then
-        return path
-    end
-
-    local current_dir = os.getenv("PWD")
-    return current_dir.."/"..path
-end
-
-local get_file_shared_dir = function (path) 
-    local map = config.shared_map
-    local pattern = ""
-    local ret = nil
-
-    for path_prefix, path_map in pairs(ma) do
-        pattern = "^"..path_prefix
-        local i, j = string.find(path, pattern)
-
-        if (i) then
-            ret = path_prefix..string.sub(path, j + 1, -1) 
-            break
-        end
-    end
-
-    return ret
-end
-
-function pduMetaTable:set_data_path (path)
-    local path = generate_abs_path(path)
-    local file = io.open(path, "r")
-
-    if (file == nil) then
-        Log.e(LOG_TAG, "file "..path.." not exists")
-        return 
-    end
-
-    local remote_dir = get_file_shared_dir (path)
-    if (remote_dir == nil) then
-        Log.e(LOG_TAG, "file "..path.." isn't shared, not supported")
-        return
-    end
-
-    self.dataPath = remote_dir
-end
-
-function pduMetaTable:set_data_path (path)
-    self.dataPath = path
-end
-
-function pduMetaTable:get_data_path ()
-    return self.dataPath
-end
-
 function pduMetaTable:get_version ()
    return self.property.versionCode, self.property.versionName
 end
 
 function pduMetaTable:__tostring ()
-    local msg = ""
+    local msg = " "
 
     for k, v in pairs(self.property) do
         if (v ~= nil) then
-            msg = k..":"..v.."\t "..msg
+            msg = k..PDU_KEYVALUE..v..PDU_DELIMETER..msg
         end
     end
 
