@@ -9,5 +9,5 @@ set RD_SERVER_IP=192.168.14.119
 set RD_SERVER_PORT=30130
 
 :: lua environment
-set LUA_INIT=@%RD_ROOT_DIR%/llib/init_preload.lua
+set LUA_INIT=@%RD_ROOT_DIR%/lua_init.lua
 set LUA_EXE=%RD_ROOT_DIR%/bin/win/lua

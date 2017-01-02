@@ -27,7 +27,7 @@ local function get_real_path (path)
         end
     end
 
-    local last_path = string.match(abs_path, "/[%a%d_-]*$")
+    local last_path = string.match(abs_path, "/[%a%d_-%.]*$")
     if (last_path ~= nil) then
         abs_path_stack[abs_path_stack_len + 1] = last_path.sub(last_path, 2, -1)
     end
@@ -61,11 +61,13 @@ local function get_remote_gui_cmd (path)
     if (Util.is_dir(path)) then
         cmd = config.file_open_map[GLOBAL_CONSTANT_FLAG.FILE_TYPE_DIR]
     else
-        local suffix = string.match("%.%a+$")
+        local suffix = string.match(path, "%.%a+$")
         if (suffix) then
             suffix = string.sub(suffix, 2, -1)
             cmd    = config.file_open_map[get_file_type(suffix)]
-        else
+        end
+
+        if (not cmd) then
             cmd    = config.file_open_map[GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR]
         end
     end
@@ -88,9 +90,8 @@ end
 
 -- open file with remote host gui
 local function remote_desk (path)
-    local real_file  = get_real_path(path)
-    local share_file = get_share_path(real_file)
-    local cmd        = get_remote_gui_cmd(real_file)
+    local share_file = get_share_path(path)
+    local cmd        = get_remote_gui_cmd(path)
 
     if (share_file == nil or cmd == nil) then
         Log.d(LOG_TAG, "invalid path : "..path)
@@ -98,11 +99,9 @@ local function remote_desk (path)
     end
 
     local pdu  = CMD_PDU.instance(PDU.instance(true))
-    pdu.set_cmd(cmd, share_file)
+    pdu:set_cmd(cmd, share_file)
     pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ, nil);
     pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NONE)
-
-    print(pdu)
 
     local socket = Socket.client(config.server_ip, config.server_port)
     if (socket ~= nil) then
@@ -151,8 +150,8 @@ end
 if (#arg == 1) then
     local path = get_real_path(arg[1])
     
-    if (Util.is_dir(path)) then
-        remote_desk(arg[1])
+    if (Util.is_dir(path) or Util.is_file(path)) then
+        remote_desk(path)
     else 
         remote_cmd(arg[1])
     end

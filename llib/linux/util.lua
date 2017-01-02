@@ -9,4 +9,8 @@ function Util.is_dir (path)
     return util.is_dir(path)
 end
 
+function Util:is_file (path)
+    return true
+end
+
 return Util

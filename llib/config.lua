@@ -19,7 +19,6 @@ local global_constant_flag = {
     FILE_TYPE_DIR  = 0x30,
     FILE_TYPE_NOR  = 0x31,
     FILE_TYPE_IMG  = 0x32,
-    FILE_TYPE_WPS  = 0x33,
 }
 
 GLOBAL_CONSTANT_FLAG = {}
@@ -44,19 +43,14 @@ config = {
     },
 
     file_open_map = {
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR] = "notepad++",
+        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR] = "notepad",
         [GLOBAL_CONSTANT_FLAG.FILE_TYPE_DIR] = "explorer",
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_WPS] = "explore",
         [GLOBAL_CONSTANT_FLAG.FILE_TYPE_IMG] = "explore",
     },
 
     file_type_map = {
         [GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR] = {
             "txt", "html", "xml",
-        },
-
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_WPS] = {
-            "doc", "docx", "ppt",
         },
 
         [GLOBAL_CONSTANT_FLAG.FILE_TYPE_IMG] = {
