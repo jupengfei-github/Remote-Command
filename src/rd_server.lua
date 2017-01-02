@@ -7,39 +7,36 @@ local LOG_TAG = "rd_server"
 
 local function get_local_command (cmd, cmd_args, cmd_path)
     local os  = os.getenv("HOST_OS")
-    local ext_command, pre_command , target_cmd = "", "", ""
+    local target_cmd = ""
 
     if (os == "win") then
         cmd_args = string.gsub(cmd_args, "/", "\\")
         cmd_path = string.gsub(cmd_path, "/", "\\")
-        ext_command = "start /b "
     elseif (os == "linux") then
         cmd_args = string.gsub(cmd_args, "\\", "/")
         cmd_path = string.gsub(cmd_path, "\\", "/")
         ext_command = " & "
     end
 
-    ext_command = ""
+    target_cmd = config.command_map[cmd]
+    target_cmd = target_cmd or cmd
+    target_cmd = target_cmd.." "..cmd_args
 
     if (cmd_path and #cmd_path > 0) then
         if (os == "win") then
-            pre_command = "cd /d "..cmd_path.." & "
+            target_cmd = "cd /d "..cmd_path.." & start /b "..target_cmd
         else
-            pre_command = "cd "..cmd_path..";"
+            target_cmd = "cd "..cmd_path..";"..target_cmd.." & "
+        end
+    else
+        if (os == "win") then
+            target_cmd = "start /b "..target_cmd
+        else
+            target_cmd = target_cmd.." & "
         end
     end
 
-    target_cmd = config.command_map[cmd]
-    target_cmd = target_cmd or cmd
-
-    local command = ""
-    if (os == "win") then
-        command = ext_command..pre_command..target_cmd.." "..cmd_args
-    else
-        command = pre_command..target_cmd.." "..cmd_args..ext_command
-    end
-
-    return command
+    return target_cmd
 end
 
 local function excute_command (socket, pdu)

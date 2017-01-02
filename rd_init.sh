@@ -1,5 +1,5 @@
 # root directory
-export RD_ROOT_DIR=/opt/jupengfei/cmd_gui
+export RD_ROOT_DIR=/opt/jupengfei/.cmd_gui
 export HOST_OS=linux
 
 # server address

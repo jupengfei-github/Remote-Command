@@ -68,10 +68,10 @@ config = {
     },
 
     command_map = {
-        notepad    = "C:\\Program Files (x86)\\Notepad++\\notepad++.exe",
-        sublime    = "C:\\Program Files\\Sublime Text 3\\sublime_text.exe",
-        search     = "C:\\Program Files\\Everything\\Everything.exe",
-        compare    = "C:\\Program Files (x86)\\Beyond Compare 4\\BCompare.exe",
+        notepad    = "\"C:\\Program Files (x86)\\Notepad++\\notepad++.exe\"",
+        sublime    = "\"C:\\Program Files\\Sublime Text 3\\sublime_text.exe\"",
+        search     = "\"C:\\Program Files\\Everything\\Everything.exe\"",
+        compare    = "\"C:\\Program Files (x86)\\Beyond Compare 4\\BCompare.exe\"",
     },
 }
 
