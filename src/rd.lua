@@ -18,7 +18,7 @@ local function get_real_path (path)
 
     abs_path_stack     = {}
     abs_path_stack_len = 0
-    for file_dir in string.gmatch(abs_path, "[_%w-%.]*/") do
+    for file_dir in string.gmatch(abs_path, "[%a%d_-%.]*/") do
         if (file_dir == "../") then
             abs_path_stack_len = abs_path_stack_len <= 1 and 1 or abs_path_stack_len - 1
         else
@@ -27,7 +27,7 @@ local function get_real_path (path)
         end
     end
 
-    local last_path = string.match(abs_path, "/[_%w-%.]*$")
+    local last_path = string.match(abs_path, "/[%a%d_-%.]*$")
     if (last_path ~= nil) then
         abs_path_stack[abs_path_stack_len + 1] = last_path.sub(last_path, 2, -1)
     end
@@ -93,7 +93,7 @@ local function execute_cmd (cmd, args, cmd_path)
     local pdu = CMD_PDU.instance(PDU.instance(true))
 
     pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ)
-    pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NONE)
+    pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NEED_NONE)
     pdu:set_cmd(cmd, args, cmd_path)
 
     local socket = Socket.client(config.server_ip, config.server_port)

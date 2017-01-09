@@ -24,13 +24,13 @@ local function get_local_command (cmd, cmd_args, cmd_path)
 
     if (cmd_path and #cmd_path > 0) then
         if (os == "win") then
-            target_cmd = "cd /d "..cmd_path.." & start /b "..target_cmd
+            target_cmd = "cd /d "..cmd_path.." & start /b cmd /c "..target_cmd
         else
             target_cmd = "cd "..cmd_path..";"..target_cmd.." & "
         end
     else
         if (os == "win") then
-            target_cmd = "start /b "..target_cmd
+            target_cmd = "start /b cmd /c "..target_cmd
         else
             target_cmd = target_cmd.." & "
         end
@@ -41,7 +41,6 @@ end
 
 local function excute_command (socket, pdu)
     local command = get_local_command(pdu:get_cmd())
-    print(pdu, command)
 
     if (pdu:get_flag() == GLOBAL_CONSTANT_FLAG.FLAG_NONE) then
         os.execute(command)
