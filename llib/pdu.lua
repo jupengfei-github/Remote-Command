@@ -107,11 +107,11 @@ function pduMetaTable:get_msg_type ()
 end
 
 function pduMetaTable:set_flag (flag)
-    self.flag = flag or self.flag
+    self.property.flag = flag or self.property.flag
 end
 
 function pduMetaTable:get_flag ()
-    return self.flag
+    return self.property.flag
 end
 
 function pduMetaTable:get_version ()
