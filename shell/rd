@@ -1,7 +1,36 @@
-#!/bin/sh
+#!/bin/bash
+
+specified_server_ip=
+specified_server_port=
+
+usage () {
+    echo "Usage rd [-h host] [-w] <command>"
+    echo "-h target host connect"
+    echo "-w wait for command execute finish"
+}
+
+while getopts h:p: option; do
+    case "$option" in 
+        h)  
+            specified_host_ip=$optarg;;
+        p)
+            specified_host_port=$optarg;;
+        \?)
+            usage
+            exit 1;;
+        *)  
+            break;;
+    esac
+done
+
+[ -n "$specified_server_ip"   ] && RD_CLIENT_IP=$specified_server_ip
+[ -n "$specified_server_port" ] && RD_CLIENT_PORT=$spefied_server_port
+
+shift [$optind - 1]
 
 if [ $LUA_EXE ]; then
-    eval $LUA_EXE $RD_ROOT_DIR/src/rd.lua $@
-else
-    lua $RD_ROOT_DIR/src/rd.lua $@
+    $LUA_EXE $args $RD_ROOT_DIR/src/rd.lua $@
 fi
+
+unset specified_server_ip
+unset specified_server_port
