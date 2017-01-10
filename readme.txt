@@ -20,3 +20,9 @@ lib目录下存放c扩展的socket的API和log的功能，在lua中则直接用�
 windows 和 linux 之间的移植
 1. lib库是基于linux的，在windows上是无法使用的, 可以使用luasocket库在windows上实现远程连接
 2. shell脚本可能需要替换成bat脚本
+
+目前遗留的问题：
+1. 在install安装脚本中配置好所有的环境变量和rd服务，在install中根据输入判断是否要安装rd服务，不为rd服务
+提供单独的cli接口。
+2. 在rd命令中配置要连接到的服务器的ip，端口使用默认的。也可以在rd中指定对应的ip
+3. 不再指定共享目录，由服务去动态的根据ip判断当前的共享目录
