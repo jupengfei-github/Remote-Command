@@ -64,8 +64,53 @@ for /f "tokens=1,2 delims=:" %%i in ('ipconfig') do (
 goto :eof
 
 :install_rd_server
-schtasks /create /tn cmd_gui /tr "%LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua" /sc onlogon
-pause 
+    set /p remote_path="Enter remote host share path : "
+    set /p local_path="Enter local host share path  : "
+
+    if "%remote_path%"=="" flag=1
+    if "%local_path%"==""  flag=1
+
+    if defined flag echo Invalid remote_path[%remote_path%] local_path[%local_path%] & exit 1
+
+    call :write_server_params %remote_path% %local_path%
+
+    schtasks /create /tn cmd_gui /tr "%LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua" /sc onlogon
+goto :eof
+
+:write_server_params
+    set target_file=%RD_ROOT_DIR%/llib/server_cfg.lua
+    set bak_file=%RD_ROOT_DIR%/llib/server_cfg.lua.bak
+    set tag=share_directory_map
+
+    set can_write=false
+
+
+    for /f %%i in ('type %target_file%') do (
+        for /f "delims= " %%k ("%%i") do (
+            set segment=%%k
+            goto end1
+        )
+
+        :end1
+        if (!segment!==%tag%) (
+            can_write=true 
+        ) else (
+            if (!can_write!==true) if (!finish_write!==false) (
+                finish_write=true
+                echo %map% >> %bak_file% 
+            else if (!segment!==%tag_prefix%) (
+                goto end
+            )
+        ) else if (!segment!==%tag1%) (
+            can_write=false
+        )
+
+        echo %%i >> %bak_file%
+        :end
+    )
+
+    del %target_file%
+    ren %bak_file% %target_file%
 goto :eof
 
 @echo on

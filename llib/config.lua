@@ -21,11 +21,11 @@ local global_constant_flag = {
 
 local global_config = {
     -- server ip
-    client_ip   = 127.0.0.1,
+    client_ip   = "192.168.5.133",
     client_port = 30130, 
 
     -- client ip
-    server_ip   = 127.0.0.1,
+    server_ip   = "192.168.5.133",
     server_port = 30130,
 
     valid_pdu_key = {
@@ -43,7 +43,7 @@ local global_config = {
 }
 
 function generate_constant (cfg) 
-    return setmetatable(GLOBAL_CONSTANT_FLAG, {
+    return setmetatable({}, {
         __index = function (t, k) 
             return cfg[k]
         end,
@@ -73,7 +73,9 @@ local function check_ip_valid (ip)
     return valid
 end
 
-local function check_port_valid (port)
+local function check_port_valid (port_str)
+    local port = tonumber(port_str)
+
     if (port ~= nil and port > 0 and port < 65535) then
         return true
     else
@@ -81,11 +83,16 @@ local function check_port_valid (port)
     end
 end
 
+local ip   = os.getenv("RD_CLIENT_IP")
+local port = os.getenv("RD_CLIENT_PORT")
+global_config.client_ip   = check_ip_valid(ip)   and ip   or global_config.client_ip
+global_config.client_port = check_port_valid(ip) and port or global_config.client_port
+
+local ip   = os.getenv("RD_SERVER_IP")
+local port = os.getenv("RD_SERVER_PORT")
+global_config.server_ip   = check_ip_valid(ip)     and ip   or global_config.server_ip
+global_config.server_port = check_port_valid(port) and port or global_config.server_port
+
 GLOBAL_CONSTANT_FLAG = generate_constant(global_constant_flag)
 GLOBAL_CONFIG        = generate_constant(global_config)
 
-check_ip_valid(os.getenv("RD_CLIENT_IP"))     && config.client_ip   = ip
-check_port_valid(os.getenv("RD_CLIENT_PORT")) && config.client_port = port
-
-check_ip_valid(os.getenv("RD_SERVER_IP"))     && config.server_ip   = ip
-check_port_valid(os.getenv("RD_SERVER_PORT")) && config.server_port = port

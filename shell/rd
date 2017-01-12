@@ -28,8 +28,10 @@ done
 
 shift [$optind - 1]
 
+echo $RD_CLIENT_IP $RD_CLIENT_PORT $@
+
 if [ $LUA_EXE ]; then
-    $LUA_EXE $args $RD_ROOT_DIR/src/rd.lua $@
+    $LUA_EXE $RD_ROOT_DIR/src/rd.lua $@
 fi
 
 unset specified_server_ip

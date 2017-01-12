@@ -15,7 +15,6 @@ export PATH=$PATH:$RD_ROOT_DIR/shell/rd
 source $RD_ROOT_DIR/shell/alias.sh
 
 export RD_SERVER_IP
-export RD_SERVER_PID
 export RD_SERVER_PORT
 
 export RD_CLIENT_IP
@@ -30,16 +29,16 @@ get_host_ip_port () {
 
 # start rd_server
 start_rd_server() {
-    if [ "$RD_HOST_PID" == "" ]; then
-        local result=`exec $LUA_EXE $RD_ROOT_DIR/src/rd_server.lua`
-        RD_SERVER_PID=`cut -f2 $result`
+    local lua_cmd="$LUA_EXE $RD_ROOT_DIR/src/rd_server.lua"
+
+    if ! ps -ef|grep -v grep|grep "$lua_cmd" &>/dev/null; then
+        ($lua_cmd &)
     fi
 }
 
 start_server=$1
 if [ "$start_server" == "true" ]; then
-    get_host_ip
+    get_host_ip_port
     start_rd_server
 
-    echo $RD_SERVER_PID
 fi

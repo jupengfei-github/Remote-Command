@@ -5,6 +5,81 @@ local CMD_PDU = require("cmd_pdu")
 
 local LOG_TAG = "rd_server"
 
+local function get_share_file (path)
+    local new_path = nil
+
+    for remote_path, local_path in pairs(server_cfg.share_directory_map) do
+        if (string.match(path, "^" .. remote_path)) then
+            new_path = local_path .. string.sub(path, string.len(remote_path) + 1, -1)
+            break
+        end
+    end
+
+    return new_path
+end
+
+local function get_note_cus_cmd (suffix)
+    local cmd = nil
+
+    for ftype, fcmd in pairs(server_cfg.file_type_map) do
+        local s, e = string.find(ftype, suffix)    
+
+        if (s ~= nil and (s == 1 or ftype[s-1] == ":") and (e == string.len(ftype) or ftype[e+1] == ":")) then
+            cmd = fcmd
+            break
+        end
+    end
+
+    return cmd
+end
+
+local function get_note_sys_cmd (suffix) 
+    local file_type, file_cmd
+
+    local type_file = popen("assoc ." .. suffix, "r")
+    if (type_file ~= nil) then
+        local msg = type_file:read("I")
+
+        file_type = string.match(msg, "=%a+")
+        type_file:close()
+    end
+
+    if (file_type ~= nil) then
+        local cmd_file = popen("ftype " .. string.sub(file_type, 2), "r")
+        if (cmd_file ~= nil) then
+            local msg = cmd_file:read("I")
+
+            file_cmd = string.match(msg, "=%a+")
+        end
+    end
+
+    if (file_cmd ~= nil) then
+        return string.sub(file_cmd, 2)
+    else
+        return nil
+    end
+end
+
+local custom_remote_command = {
+    note = function (cmd_args, cmd_path) 
+        local suffix = string.match(path, "%.%a+$")
+        local cmd    = get_note_cus_cmd(suffix)
+
+        if (cmd == nil) then
+            cmd = get_note_sys_cmd(suffix)
+        end
+
+        if (cmd == nil) then
+            cmd = server_cfg.default
+        end
+
+        local share_file = get_share_file(path)
+        if (share_file ~= nil) then
+            execute_command(cmd, path)
+        end
+    end,
+}
+
 local function get_local_command (cmd, cmd_args, cmd_path)
     local os  = os.getenv("HOST_OS")
     local target_cmd = ""
@@ -39,8 +114,17 @@ local function get_local_command (cmd, cmd_args, cmd_path)
     return target_cmd
 end
 
-local function excute_command (socket, pdu)
-    local command = get_local_command(pdu:get_cmd())
+local function handle_command (socket, pdu)
+    local remote_cmd, remote_cmd_args, remote_cmd_path = pdu:get_cmd()
+
+    for cmd, cmd_proc in pairs(server_cfg.remote_cmd_map) do
+        if (remote_cmd == cmd) then
+            remote_cmd = cmd_proc
+            break
+        end
+    end
+
+    local command = get_local_command(remote_cmd, remote_cmd_args, remote_cmd_path)
 
     if (pdu:get_flag() == GLOBAL_CONSTANT_FLAG.FLAG_NONE) then
         os.execute(command)
@@ -71,7 +155,7 @@ local function handle_client (socket)
 
         if (recv_pdu:get_msg_type() == GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ) then
             if (recv_pdu:get_data_type() == GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD) then
-                excute_command(socket, CMD_PDU.parse(recv_pdu))
+                handle_command(socket, CMD_PDU.parse(recv_pdu))
             end
         end
     else
