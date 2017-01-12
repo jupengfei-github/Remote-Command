@@ -1,5 +1,5 @@
 # root directory
-export RD_ROOT_DIR=/opt/jupengfei/.cmd_gui
+export RD_ROOT_DIR=/home/ubuntu/cmd_gui
 export HOST_OS=linux
 
 # lua environment
@@ -12,6 +12,7 @@ export LUA_EXE=$RD_ROOT_DIR/bin/linux/lua
 export PATH=$PATH:$RD_ROOT_DIR/shell/rd
 
 # alias 
+<<<<<<< HEAD
 source $RD_ROOT_DIR/shell/alias.sh
 
 export RD_SERVER_IP
@@ -40,5 +41,4 @@ start_server=$1
 if [ "$start_server" == "true" ]; then
     get_host_ip_port
     start_rd_server
-
 fi
