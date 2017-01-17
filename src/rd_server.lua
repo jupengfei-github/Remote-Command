@@ -139,7 +139,6 @@ end
 
 local function handle_command (socket, pdu)
     local command = get_local_command(pdu:get_cmd())
-    print(command)
 
     if (pdu:get_flag() == GLOBAL_CONSTANT_FLAG.FLAG_NONE) then
         os.execute(command)
