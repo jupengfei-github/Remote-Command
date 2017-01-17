@@ -17,8 +17,6 @@ local function execute_cmd (cmd, args, cmd_path)
     pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NEED_NONE)
     pdu:set_cmd(cmd, args, cmd_path)
 
-    print(tostring(pdu))
-
     local socket = Socket.client(GLOBAL_CONFIG.client_ip, GLOBAL_CONFIG.client_port)
     if (socket ~= nil) then
         socket:send(tostring(pdu))
