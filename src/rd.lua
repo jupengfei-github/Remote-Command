@@ -5,33 +5,8 @@ local PDU     = require("pdu")
 
 local LOG_TAG = "rd_client"
 
-local function get_real_path (path)
-    local cur_path = os.getenv("PWD")
-    local abs_path, abs_path_stack, abs_path_stack_len
-
-    if (string.sub(path, 1, 1) == "/") then
-        abs_path = path
-    else
-        abs_path = cur_path.."/"..path
-    end
-
-    abs_path_stack     = {}
-    abs_path_stack_len = 0
-    for file_dir in string.gmatch(abs_path, "[%a%d_-%.]*/") do
-        if (file_dir == "../") then
-            abs_path_stack_len = abs_path_stack_len <= 1 and 1 or abs_path_stack_len - 1
-        else
-            abs_path_stack_len = abs_path_stack_len + 1
-            abs_path_stack[abs_path_stack_len] = file_dir
-        end
-    end
-
-    local last_path = string.match(abs_path, "/[%a%d_-%.]*$")
-    if (last_path ~= nil) then
-        abs_path_stack[abs_path_stack_len + 1] = last_path.sub(last_path, 2, -1)
-    end
-
-    return table.concat(abs_path_stack)
+local function get_cur_path () 
+    return os.getenv("PWD")
 end
 
 -- excute command
@@ -50,29 +25,22 @@ local function execute_cmd (cmd, args, cmd_path)
 end
 
 local function default_remote_command (cmd, tb) 
-    local args       = table.concat(tb, " ")
-    local local_path = get_real_path(".")
+    local args     = table.concat(tb, " ")
+    local cur_path = get_cur_path()
 
-    execute_cmd(cmd, args, local_path)
+    execute_cmd(cmd, args, cur_path)
 end
 
 local custom_remote_command = {
-    note = function (tb) 
-        local path = function ()
-            if (#tb <= 0) then
-                return "."
-            else
-                return table.concat(tb, " ")
-            end
-        end
-        local real_path = get_real_path(path())
+    view = function (tb) 
+        local cur_path = get_cur_path()
+        local file     = nil
 
-        if (real_path == nil) then
-            Log.d(LOG_TAG, "invalid path : " .. path())
-            return
+        if (#tb > 0) then
+            file = table.concat(tb, " ")
         end
 
-        execute_cmd("note", real_path)
+        execute_cmd("view", file, cur_path)
     end,
 
     help = function ()
@@ -80,7 +48,7 @@ local custom_remote_command = {
             rd <command> <args>  execute command
 
             <command> maybe:
-            note      open file or directory 
+            view      open file or directory 
             help      show help message
             <cmd>     <cmd> on remote host
             ]]
@@ -89,8 +57,6 @@ local custom_remote_command = {
 }
 
 -------------- Main Function ------------------
-local sub_command=arg[1]
-
 if (#arg < 1) then
     sub_command = "help"
 else

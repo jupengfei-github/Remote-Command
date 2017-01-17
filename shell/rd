@@ -23,8 +23,8 @@ while getopts h:p: option; do
     esac
 done
 
-[ -n "$specified_server_ip"   ] && RD_CLIENT_IP=$specified_server_ip
-[ -n "$specified_server_port" ] && RD_CLIENT_PORT=$spefied_server_port
+[ -n "$specified_server_ip"   ] && export RD_CLIENT_IP=$specified_server_ip
+[ -n "$specified_server_port" ] && export RD_CLIENT_PORT=$spefied_server_port
 
 if [ -n "$optind" ]; then
     shift [ $optind - 1 ]

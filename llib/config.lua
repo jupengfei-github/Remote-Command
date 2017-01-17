@@ -21,7 +21,7 @@ local global_constant_flag = {
 
 local global_config = {
     -- server ip
-    client_ip   = "192.168.5.133",
+    client_ip   = "192.168.14.171",
     client_port = 30130, 
 
     -- client ip
