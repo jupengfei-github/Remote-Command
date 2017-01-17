@@ -74,7 +74,7 @@ goto :eof
 
     call :write_server_params %remote_path% %local_path%
 
-    schtasks /create /tn cmd_gui /tr "%LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua" /sc onlogon
+ rem   schtasks /create /tn cmd_gui /tr "%LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua" /sc onlogon
 goto :eof
 
 :write_server_params
@@ -82,8 +82,10 @@ goto :eof
     set bak_file=%RD_ROOT_DIR%/llib/server_cfg.lua.bak
     set tag=share_directory_map
 
-    set can_write=false
+    echo %1 %2
+    goto :eof
 
+    set can_write=false
 
     for /f %%i in ('type %target_file%') do (
         for /f "delims= " %%k ("%%i") do (

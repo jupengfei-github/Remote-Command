@@ -42,31 +42,18 @@ local function execute_cmd (cmd, args, cmd_path)
     pdu:set_flag(GLOBAL_CONSTANT_FLAG.FLAG_NEED_NONE)
     pdu:set_cmd(cmd, args, cmd_path)
 
-    local socket = Socket.client(config.client_ip, config.client_port)
+    local socket = Socket.client(GLOBAL_CONFIG.client_ip, GLOBAL_CONFIG.client_port)
     if (socket ~= nil) then
         socket:send(tostring(pdu))
         socket:close()
     end
 end
 
-local function help_usage () 
-    print([[ Usage:
-        rd <command> <args>  execute command
-
-        <command> maybe:
-            note     open file or directory 
-            help     show help message
-            <cmd>  <cmd> on remote host
-        ]]
-    )
-end
-
 local function default_remote_command (cmd, tb) 
     local args       = table.concat(tb, " ")
     local local_path = get_real_path(".")
-    local share_path = get_share_path(local_path)
 
-    execute_cmd(cmd, args, share_path)
+    execute_cmd(cmd, args, local_path)
 end
 
 local custom_remote_command = {
@@ -78,27 +65,37 @@ local custom_remote_command = {
                 return table.concat(tb, " ")
             end
         end
-        local real_path = get_real_path(path)
+        local real_path = get_real_path(path())
 
         if (real_path == nil) then
-            Log.d(LOG_TAG, "invalid path : "..path)
+            Log.d(LOG_TAG, "invalid path : " .. path())
             return
         end
 
         execute_cmd("note", real_path)
+    end,
+
+    help = function ()
+        print([[ Usage:
+            rd <command> <args>  execute command
+
+            <command> maybe:
+            note      open file or directory 
+            help      show help message
+            <cmd>     <cmd> on remote host
+            ]]
+        )
     end,
 }
 
 -------------- Main Function ------------------
 local sub_command=arg[1]
 
-table.remove(arg, 1)
-
-if (sub_command == "help") then
-    help_usage()
-    return
+if (#arg < 1) then
+    sub_command = "help"
 else
-    sub_command = "note"
+    sub_command = arg[1]
+    table.remove(arg, 1)
 end
 
 for cmd, cmd_proc in pairs(custom_remote_command) do

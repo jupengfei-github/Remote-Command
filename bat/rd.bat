@@ -1,10 +1,12 @@
+@echo off
+
 set specified_server_ip=
 set specified_server_port=
 
 setlocal enabledelayedexpansion
 setlocal enableextensions
 
-set args= 
+set args=
 set parse_server_ip=false
 set parse_server_port=false
 
@@ -47,3 +49,5 @@ set secified_server_port=
     echo "-h target host connect"
     echo "-w wait for command execute finish"
     goto :eof
+
+@echo on

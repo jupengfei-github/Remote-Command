@@ -9,7 +9,7 @@ export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
 export LUA_EXE=$RD_ROOT_DIR/bin/linux/lua
 
 # put rd command in standard path
-export PATH=$PATH:$RD_ROOT_DIR/shell/rd
+export PATH=$PATH:$RD_ROOT_DIR/shell
 
 # alias 
 <<<<<<< HEAD

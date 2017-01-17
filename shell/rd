@@ -26,9 +26,9 @@ done
 [ -n "$specified_server_ip"   ] && RD_CLIENT_IP=$specified_server_ip
 [ -n "$specified_server_port" ] && RD_CLIENT_PORT=$spefied_server_port
 
-shift [$optind - 1]
-
-echo $RD_CLIENT_IP $RD_CLIENT_PORT $@
+if [ -n "$optind" ]; then
+    shift [ $optind - 1 ]
+fi
 
 if [ $LUA_EXE ]; then
     $LUA_EXE $RD_ROOT_DIR/src/rd.lua $@
