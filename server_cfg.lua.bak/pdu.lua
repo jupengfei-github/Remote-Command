@@ -20,7 +20,7 @@ pduMetaTable.property = {
 
 -- check pdu key
 local is_valid_key = function (key)
-   for k,v in pairs(GLOBAL_CONFIG.valid_keys) do
+   for k,v in pairs(config.valid_keys) do
        if (v == key) then
            return true
         end
@@ -54,7 +54,7 @@ end
 function PDU.parse (msg)
     local pdu = PDU.instance(false)
 
-    for k, key in pairs(GLOBAL_CONFIG.valid_pdu_key) do
+    for k, key in pairs(config.valid_pdu_key) do
         local si, ei = string.find(msg, key..PDU_KEYVALUE)
 
         if (si) then

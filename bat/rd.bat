@@ -9,45 +9,48 @@ setlocal enableextensions
 set args=
 set parse_server_ip=false
 set parse_server_port=false
+set continue=false
 
-for %%i in (%*) do (
-    if (%%i==-h) set parse_server_ip=true   & goto continue
-    if (%%i==-p) set parse_server_port=true & goto continue
+for /f "delims= " %%i in ("%*") do (
+    set continue=false
+    set param=%%i
 
-    if (!parse_server_ip!==true) (
-        set specified_server_ip=%i
-        set parse_server_ip=false
-        goto continue
+    if !param:~0,2!==-h (
+        set specified_server_ip=!param:~2!
+        set continue=true
     )
 
-    if (!parse_server_port!==true) (
-        set specified_server_port=%i
-        set parse_server_port=false
-        goto continue
+    if !param:~0,2!==-p (
+        set specified_server_port=!param:~2!
+        set continue=true
     )
 
-    set args="%args% %%i"
+    if %%i==-h (
+        set continue=true
+        shift
+        set specified_server_ip=!param!
+    )
 
-:continue
+    if %%i==-p (
+        set continue=true
+        shift
+        set specified_server_port=!param!
+    )
+
+    if !param:~0,1!==- (
+        echo Invalid Params
+        exit
+    )
+
+    if !conitnue!==false set args="%args% %%i"
 )
-
-if %parse_server_ip=="true"  echo Invalid Parameters & exit 1
-if %parse_server_port="true" echo Invalid Parameters & exit 1
-
-if defined specified_server_ip    setx RD_CLIENT_IP   %specified_server_ip%
-if defined specified_server_port  setx RD_CLIENT_PORT %spefied_server_port%
-
-echo $RD_CLIENT_IP $RD_CLIENT_PORT $@
-
-if defined LUA_EXE %LUA_EXE% %RD_ROOT_DIR%/src/rd.lua %args%
-
-set specified_server_ip=
-set secified_server_port=
 
 :usage
     echo "Usage rd [-h host] [-w] <command>"
     echo "-h target host connect"
     echo "-w wait for command execute finish"
-    goto :eof
+goto :eof
 
 @echo on
+echo %parse_server_ip% %parse_server_port%
+echo %specified_server_ip% %specified_server_port%

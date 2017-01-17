@@ -10,7 +10,7 @@ set OS=win
 call :get_root_dir
 
 :: server address
-set SERVER_IP=192.168.14.11
+set SERVER_IP=127.0.0.1
 set SERVER_PORT=30130
 
 call :get_ip_address
@@ -74,45 +74,42 @@ goto :eof
 
     call :write_server_params %remote_path% %local_path%
 
- rem   schtasks /create /tn cmd_gui /tr "%LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua" /sc onlogon
+    schtasks /create /tn cmd_gui /tr "%LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua" /sc onlogon
 goto :eof
 
 :write_server_params
-    set target_file=%RD_ROOT_DIR%/llib/server_cfg.lua
-    set bak_file=%RD_ROOT_DIR%/llib/server_cfg.lua.bak
-    set tag=share_directory_map
-
-    echo %1 %2
-    goto :eof
+    set target_file_prefix=server_cfg.lua
+    set target_file=%RD_ROOT_DIR%llib\%target_file_prefix%
+    set bak_file=%RD_ROOT_DIR%llib\%target_file_prefix%.bak
+    set tag1=share_directory_map
+    set tag2=}
 
     set can_write=false
+    set map=    ["%1"] = "%2",
+    set tag_prefix=["%1"]
 
-    for /f %%i in ('type %target_file%') do (
-        for /f "delims= " %%k ("%%i") do (
-            set segment=%%k
-            goto end1
+    for /f "delims=" %%i in (%target_file%) do (
+        for /f "tokens=1,2 delims= " %%k in ("%%i") do (
+            set segment1=%%k
+            set segment2=%%l
         )
 
-        :end1
-        if (!segment!==%tag%) (
-            can_write=true 
+        if !segment2!==%tag1% (
+            echo %%i   >> %bak_file%
+            echo %map% >> %bak_file%
+            set can_write=true 
         ) else (
-            if (!can_write!==true) if (!finish_write!==false) (
-                finish_write=true
-                echo %map% >> %bak_file% 
-            else if (!segment!==%tag_prefix%) (
-                goto end
+            if !can_write!==true (
+                if not !segment1!==%tag_prefix% echo %%i >> %bak_file%
+                if !segment1!==%tag2% set can_write=false
+            ) else (
+                echo %%i >> %bak_file% 
             )
-        ) else if (!segment!==%tag1%) (
-            can_write=false
         )
-
-        echo %%i >> %bak_file%
-        :end
     )
 
     del %target_file%
-    ren %bak_file% %target_file%
+    ren %bak_file% %target_file_prefix%
 goto :eof
 
 @echo on
