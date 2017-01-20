@@ -11,8 +11,8 @@ local function get_note_cus_cmd (suffix)
     for ftype, fcmd in pairs(server_cfg.file_type_map) do
         local s, e = string.find(ftype, suffix)    
 
-        if ((s == 1 or string.sub(ftype, s - 1, s - 1) == ":") and
-            (e == string.len(ftype) or string.sub(ftype, e + 1, e + 1) == ":")) then
+        if ((s == 1 or (s ~= nil and string.sub(ftype, s - 1, s - 1) == ":")) and
+            (e == string.len(ftype) or (e ~= nil and string.sub(ftype, e + 1, e + 1) == ":"))) then
             cmd = fcmd
             break
         end

@@ -74,7 +74,12 @@ goto :eof
 
     call :write_server_params %remote_path% %local_path%
 
-    schtasks /create /tn cmd_gui /tr "%LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua" /sc onlogon
+    set start_file=%RD_ROOT_DIR%bat\rd_server.vbs
+    if exist %start_file% del %start_file%
+    
+    echo Set ws = CreateObject("Wscript.Shell")>%start_file%
+    echo ws.run "cmd /c %LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua",vbhide>>%start_file% 
+    schtasks /create /tn cmd_gui /tr "%start_file%" /sc onlogon
 goto :eof
 
 :write_server_params
@@ -97,9 +102,10 @@ goto :eof
         if !segment2!==%tag1% (
             echo %%i   >> %bak_file%
             echo %map% >> %bak_file%
-            set can_write=true 
+            set can_write=true
         ) else (
             if !can_write!==true (
+                echo !segment1! %tag_prefix%
                 if not !segment1!==%tag_prefix% echo %%i >> %bak_file%
                 if !segment1!==%tag2% set can_write=false
             ) else (
