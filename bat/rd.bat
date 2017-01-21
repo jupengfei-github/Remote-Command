@@ -15,6 +15,9 @@ for /f "delims= " %%i in ("%*") do (
     set continue=false
     set param=%%i
 
+    if !parse_server_ip!==true  set specified_server_ip=!param!   & set continue=true
+    if !parse_server_pot!==true set specified_server_port=!param! & set continue=true
+
     if !param:~0,2!==-h (
         set specified_server_ip=!param:~2!
         set continue=true
@@ -27,18 +30,16 @@ for /f "delims= " %%i in ("%*") do (
 
     if %%i==-h (
         set continue=true
-        shift
-        set specified_server_ip=!param!
+        set parse_server_ip=true
     )
 
     if %%i==-p (
         set continue=true
-        shift
-        set specified_server_port=!param!
+        set parse_server_port=false
     )
 
     if !param:~0,1!==- (
-        echo Invalid Params
+        call :usage
         exit
     )
 
