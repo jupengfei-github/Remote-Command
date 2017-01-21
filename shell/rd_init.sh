@@ -24,7 +24,6 @@ export RD_CLIENT_PORT=30130
 get_host_ip_port () {
     local ip=`ifconfig eth0|awk -F : '/inet /{print $2}'`
     RD_SERVER_IP=${ip%% *}
-    RD_SERVER_PORT=30130
 }
 
 # start rd_server

@@ -86,10 +86,10 @@ end
 local ip   = os.getenv("RD_CLIENT_IP")
 local port = os.getenv("RD_CLIENT_PORT")
 global_config.client_ip   = check_ip_valid(ip)   and ip   or global_config.client_ip
-global_config.client_port = check_port_valid(ip) and port or global_config.client_port
+global_config.client_port = check_port_valid(port) and port or global_config.client_port
 
-local ip   = os.getenv("RD_SERVER_IP")
-local port = os.getenv("RD_SERVER_PORT")
+ip   = os.getenv("RD_SERVER_IP")
+port = os.getenv("RD_SERVER_PORT")
 global_config.server_ip   = check_ip_valid(ip)     and ip   or global_config.server_ip
 global_config.server_port = check_port_valid(port) and port or global_config.server_port
 
