@@ -34,23 +34,15 @@ while getopts h:p: option; do
 done
 
 if [ -n "$specified_server_ip"   ]; then
-    if [ $# -gt 0 ]; then
-        sed -i "/export RD_CLIENT_IP=/c export RD_CLIENT_IP=$specified_server_ip" $rd_init
-    else
-        export RD_CLIENT_IP=$specified_server_ip
-    fi
+    sed -i "/export RD_CLIENT_IP=/c export RD_CLIENT_IP=$specified_server_ip" $rd_init
 fi
 
 if [ -n "$specified_server_port" ]; then
-    if [ $# -gt 0 ]; then
-        sed -i "/export RD_CLIENT_PORT=/c export RD_CLIENT_PORT=$specified_server_port" $rd_init
-    else
-        export RD_CLIENT_PORT=$spefied_server_port
-    fi
+    sed -i "/export RD_CLIENT_PORT=/c export RD_CLIENT_PORT=$specified_server_port" $rd_init
 fi
 
-if [ -n "$optind" ]; then
-    shift [ $optind - 1 ]
+if [ -n "$OPTIND" ]; then
+    shift $[ $OPTIND - 1 ]
 fi
 
 if [ -n "$LUA_EXE" ] && [ $# -gt 0 ]; then
