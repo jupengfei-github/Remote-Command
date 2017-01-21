@@ -27,8 +27,8 @@ if "%ROOT_DIR%"=="" if "%SERVER_IP%"=="" (
 )
 
 :: lua environment
-set INIT=@%RD_ROOT_DIR%\src\lua_init.lua
-set EXE=%RD_ROOT_DIR%bin\win\lua.exe
+set INIT=@%ROOT_DIR%\src\lua_init.lua
+set EXE=%ROOT_DIR%bin\win\lua.exe
 
 setx RD_ROOT_DIR  %ROOT_DIR%
 setx RD_SERVER_IP %SERVER_IP%
@@ -74,18 +74,18 @@ goto :eof
 
     call :write_server_params %remote_path% %local_path%
 
-    set start_file=%RD_ROOT_DIR%bat\rd_server.vbs
+    set start_file=%ROOT_DIR%bat\rd_server.vbs
     if exist %start_file% del %start_file%
     
     echo Set ws = CreateObject("Wscript.Shell")>%start_file%
-    echo ws.run "cmd /c %LUA_EXE% %RD_ROOT_DIR%src\rd_server.lua",vbhide>>%start_file% 
+    echo ws.run "cmd /c %EXE% %ROOT_DIR%src\rd_server.lua",vbhide>>%start_file% 
     schtasks /create /tn cmd_gui /tr "%start_file%" /sc onlogon
 goto :eof
 
 :write_server_params
     set target_file_prefix=server_cfg.lua
-    set target_file=%RD_ROOT_DIR%llib\%target_file_prefix%
-    set bak_file=%RD_ROOT_DIR%llib\%target_file_prefix%.bak
+    set target_file=%ROOT_DIR%llib\%target_file_prefix%
+    set bak_file=%ROOT_DIR%llib\%target_file_prefix%.bak
     set tag1=share_directory_map
     set tag2=}
 
