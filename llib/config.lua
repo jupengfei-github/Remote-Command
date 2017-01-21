@@ -21,12 +21,12 @@ local global_constant_flag = {
 
 local global_config = {
     -- server ip
-    client_ip   = "192.168.14.171",
-    client_port = 30130, 
+    client_ip   = "-1",
+    client_port = -1, 
 
     -- client ip
-    server_ip   = "192.168.5.133",
-    server_port = 30130,
+    server_ip   = "-1",
+    server_port = -1,
 
     valid_pdu_key = {
         "versionCode",  "versionName", "msgType",  "dataType",

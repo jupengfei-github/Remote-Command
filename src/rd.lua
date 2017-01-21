@@ -42,23 +42,11 @@ local custom_remote_command = {
 
         execute_cmd("view", file, cur_path)
     end,
-
-    help = function ()
-        print([[ Usage:
-            rd <command> <args>  execute command
-
-            <command> maybe:
-            view      open file or directory 
-            help      show help message
-            <cmd>     <cmd> on remote host
-            ]]
-        )
-    end,
 }
 
 -------------- Main Function ------------------
 if (#arg < 1) then
-    sub_command = "help"
+    return
 else
     sub_command = arg[1]
     table.remove(arg, 1)

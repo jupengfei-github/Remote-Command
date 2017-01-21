@@ -3,18 +3,28 @@
 specified_server_ip=
 specified_server_port=
 
+rd_root_dir=$RD_ROOT_DIR
+rd_init=$rd_root_dir/shell/rd_init.sh
+
 usage () {
-    echo "Usage rd [-h host] [-w] <command>"
-    echo "-h target host connect"
-    echo "-w wait for command execute finish"
+    echo "Usage : "
+    echo "      rd [-h host] [-p port] [<command>]"
+    echo 
+    echo "      <command> may be :"
+    echo "          view  [file|directory] open file in remote host"
+    echo "          custom_cmd  [args]     execute command in remote host"
 }
+
+if [ $# -le 0 ]; then
+    usage
+fi
 
 while getopts h:p: option; do
     case "$option" in 
         h)  
-            specified_host_ip=$optarg;;
+            specified_server_ip=$OPTARG;;
         p)
-            specified_host_port=$optarg;;
+            specified_server_port=$OPTARG;;
         \?)
             usage
             exit 1;;
@@ -23,14 +33,27 @@ while getopts h:p: option; do
     esac
 done
 
-[ -n "$specified_server_ip"   ] && export RD_CLIENT_IP=$specified_server_ip
-[ -n "$specified_server_port" ] && export RD_CLIENT_PORT=$spefied_server_port
+if [ -n "$specified_server_ip"   ]; then
+    if [ $# -gt 0 ]; then
+        sed -i "/export RD_CLIENT_IP=/c export RD_CLIENT_IP=$specified_server_ip" $rd_init
+    else
+        export RD_CLIENT_IP=$specified_server_ip
+    fi
+fi
+
+if [ -n "$specified_server_port" ]; then
+    if [ $# -gt 0 ]; then
+        sed -i "/export RD_CLIENT_PORT=/c export RD_CLIENT_PORT=$specified_server_port" $rd_init
+    else
+        export RD_CLIENT_PORT=$spefied_server_port
+    fi
+fi
 
 if [ -n "$optind" ]; then
     shift [ $optind - 1 ]
 fi
 
-if [ $LUA_EXE ]; then
+if [ -n "$LUA_EXE" ] && [ $# -gt 0 ]; then
     $LUA_EXE $RD_ROOT_DIR/src/rd.lua $@
 fi
 

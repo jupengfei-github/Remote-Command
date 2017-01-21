@@ -14,11 +14,11 @@ export PATH=$PATH:$RD_ROOT_DIR/shell
 # alias 
 source $RD_ROOT_DIR/shell/alias.sh
 
-export RD_SERVER_IP
-export RD_SERVER_PORT
+export RD_SERVER_IP=
+export RD_SERVER_PORT=30130
 
-export RD_CLIENT_IP
-export RD_CLIENT_PORT
+export RD_CLIENT_IP=192.168.14.171
+export RD_CLIENT_PORT=30130
 
 # server address
 get_host_ip_port () {
