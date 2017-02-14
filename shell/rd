@@ -1,0 +1,53 @@
+#!/bin/bash
+
+specified_server_ip=
+specified_server_port=
+
+rd_root_dir=$RD_ROOT_DIR
+rd_init=$rd_root_dir/shell/rd_init.sh
+
+usage () {
+    echo "Usage : "
+    echo "      rd [-h host] [-p port] [<command>]"
+    echo 
+    echo "      <command> may be :"
+    echo "          view  [file|directory] open file in remote host"
+    echo "          custom_cmd  [args]     execute command in remote host"
+}
+
+if [ $# -le 0 ]; then
+    usage
+fi
+
+while getopts h:p: option; do
+    case "$option" in 
+        h)  
+            specified_server_ip=$OPTARG;;
+        p)
+            specified_server_port=$OPTARG;;
+        \?)
+            usage
+            exit 1;;
+        *)  
+            break;;
+    esac
+done
+
+if [ -n "$specified_server_ip"   ]; then
+    sed -i "/export RD_CLIENT_IP=/c export RD_CLIENT_IP=$specified_server_ip" $rd_init
+fi
+
+if [ -n "$specified_server_port" ]; then
+    sed -i "/export RD_CLIENT_PORT=/c export RD_CLIENT_PORT=$specified_server_port" $rd_init
+fi
+
+if [ -n "$OPTIND" ]; then
+    shift $[ $OPTIND - 1 ]
+fi
+
+if [ -n "$LUA_EXE" ] && [ $# -gt 0 ]; then
+    $LUA_EXE $RD_ROOT_DIR/src/rd.lua $@
+fi
+
+unset specified_server_ip
+unset specified_server_port

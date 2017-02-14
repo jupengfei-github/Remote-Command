@@ -38,7 +38,7 @@ function CMD_PDU.parse (pdu)
     local msg     = pdu:get_data()
     local cmd_pdu = CMD_PDU.instance(pdu)
 
-    for k, key in pairs(config.valid_cmd_pdu_key) do
+    for k, key in pairs(GLOBAL_CONFIG.valid_cmd_pdu_key) do
         local si, ei = string.find(msg, key..CMD_PDU_KEYVALUE)
 
         if (si) then

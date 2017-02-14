@@ -15,65 +15,44 @@ local global_constant_flag = {
     FLAG_NEED_ACK  = 0x21,
     FLAG_NONE      = 0x20,
 
-    -- file type
-    FILE_TYPE_DIR  = 0x30,
-    FILE_TYPE_NOR  = 0x31,
-    FILE_TYPE_IMG  = 0x32,
+    -- predefined command
+    CMD_NOTE       = 0x30,  -- open file with graphics
 }
 
-GLOBAL_CONSTANT_FLAG = {}
-setmetatable(GLOBAL_CONSTANT_FLAG, {
-    __index = function (t, k) 
-        return global_constant_flag[k]
-    end,
-
-    __newindex = function (t, k)
-        print("Error : write read-only table")
-    end
-})
-
-config = {
+local global_config = {
     -- server ip
-    server_ip   = "192.168.14.171",
-    server_port = 30130, 
+    client_ip   = "-1",
+    client_port = -1, 
 
-    -- map table
-    shared_map = {
-        ["/opt/jupengfei"] = "z:",
-    },
-
-    file_open_map = {
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR] = "notepad",
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_DIR] = "explorer",
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_IMG] = "explore",
-    },
-
-    file_type_map = {
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_NOR] = {
-            "txt", "html", "xml",
-        },
-
-        [GLOBAL_CONSTANT_FLAG.FILE_TYPE_IMG] = {
-            "jpg", "png", "bmp",
-        },
-    },
+    -- client ip
+    server_ip   = "-1",
+    server_port = -1,
 
     valid_pdu_key = {
-        "versionCode",  "versionName", "msgType", "dataType", "data", "dataPath",
-        "dataSize", "flag",
+        "versionCode",  "versionName", "msgType",  "dataType",
+        "data",         "dataPath",    "dataSize", "flag",
     },
 
     valid_cmd_pdu_key = {
         "cmd", "cmd_params", "cmd_path",
     },
 
-    command_map = {
-        notepad    = "\"C:\\Program Files (x86)\\Notepad++\\notepad++.exe\"",
-        sublime    = "\"C:\\Program Files\\Sublime Text 3\\sublime_text.exe\"",
-        search     = "\"C:\\Program Files\\Everything\\Everything.exe\"",
-        compare    = "\"C:\\Program Files (x86)\\Beyond Compare 4\\BCompare.exe\"",
+    pre_defined_cmd = {
+        CMD_NOTE,
     },
 }
+
+function generate_constant (cfg) 
+    return setmetatable({}, {
+        __index = function (t, k) 
+            return cfg[k]
+        end,
+
+        __newindex = function (t, k)
+            print("Error : write read-only table")
+        end
+    })
+end
 
 local function check_ip_valid (ip) 
     local pattern = "^%d+%.%d+%.%d+%.%d+$"
@@ -94,7 +73,9 @@ local function check_ip_valid (ip)
     return valid
 end
 
-local function check_port_valid (port)
+local function check_port_valid (port_str)
+    local port = tonumber(port_str)
+
     if (port ~= nil and port > 0 and port < 65535) then
         return true
     else
@@ -102,13 +83,15 @@ local function check_port_valid (port)
     end
 end
 
-local ip   = os.getenv("RD_SERVER_IP")
-local port = os.getenv("RD_SERVER_PORT")
+local ip   = os.getenv("RD_CLIENT_IP")
+local port = os.getenv("RD_CLIENT_PORT")
+global_config.client_ip   = check_ip_valid(ip)   and ip   or global_config.client_ip
+global_config.client_port = check_port_valid(port) and port or global_config.client_port
 
-if (check_ip_valid(ip)) then
-    config.server_ip = ip
-end
+ip   = os.getenv("RD_SERVER_IP")
+port = os.getenv("RD_SERVER_PORT")
+global_config.server_ip   = check_ip_valid(ip)     and ip   or global_config.server_ip
+global_config.server_port = check_port_valid(port) and port or global_config.server_port
 
-if (check_port_valid(tonumber(port))) then
-    config.server_port = port
-end
+GLOBAL_CONSTANT_FLAG = generate_constant(global_constant_flag)
+GLOBAL_CONFIG        = generate_constant(global_config)

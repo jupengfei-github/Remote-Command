@@ -35,7 +35,7 @@ typedef enum _BOOL {
 /* logsystem we use. we support syslog and file_log in linux
  * and only file_log in windows 
  */
-static BOOL use_sys_log = TRUE, use_file_log =  FALSE;
+static BOOL use_sys_log = FALSE, use_file_log =  TRUE;
 static int sys_log_fd  = -1,    file_log_fd  = -1;
 
 /* file log path */
