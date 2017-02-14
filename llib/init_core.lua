@@ -11,7 +11,7 @@ local built_c_path = function ()
         }
     elseif host_os == "win" then
         lib_path = {
-            RD_ROOT_DIR.."/lib/win/?.dll",
+            RD_ROOT_DIR.."lib\\win\\?.dll",
         }
     end
 
@@ -28,11 +28,11 @@ local built_lua_path = function ()
         }
     elseif host_os == "win" then
         lib_path = {
-            [1] = RD_ROOT_DIR.."/llib/win/?.lua",
+            [1] = RD_ROOT_DIR.."llib\\win\\?.lua",
         }
     end
 
-    lib_path[#lib_path + 1] = RD_ROOT_DIR.."/llib/?.lua"
+    lib_path[#lib_path + 1] = RD_ROOT_DIR.."\\llib\\?.lua"
 
     return lib_path
 end
@@ -50,7 +50,7 @@ end
 
 -- lua path
 local path = package.path
-    for k,v in pairs(USER_LUA_PATHS) do
+for k,v in pairs(USER_LUA_PATHS) do
         if (not string.match(path, v)) then
         package.path = package.path ..";".. v
     end

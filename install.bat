@@ -30,11 +30,12 @@ if "%ROOT_DIR%"=="" if "%SERVER_IP%"=="" (
 set INIT=@%ROOT_DIR%\src\lua_init.lua
 set EXE=%ROOT_DIR%bin\win\lua.exe
 
-setx RD_ROOT_DIR  %ROOT_DIR%
-setx RD_SERVER_IP %SERVER_IP%
-setx HOST_OS      %OS%
-setx LUA_INIT     %INIT%
-setx LUA_EXE      %EXE%
+setx RD_ROOT_DIR    %ROOT_DIR%
+setx RD_SERVER_IP   %SERVER_IP%
+setx RD_SERVER_PORT %SERVER_PORT%
+setx HOST_OS        %OS%
+setx LUA_INIT       %INIT%
+setx LUA_EXE        %EXE%
 
 set /p answer=Are your sure to install server[yes/no]:
 if %answer%==yes (
