@@ -25,10 +25,12 @@ local built_lua_path = function ()
     if host_os == "linux" then
         lib_path = {
             [1] = RD_ROOT_DIR.."/llib/linux/?.lua",
+			[2] = RD_ROOT_DIR.."/llib/?.lua",
         }
     elseif host_os == "win" then
         lib_path = {
             [1] = RD_ROOT_DIR.."llib\\win\\?.lua",
+			[2] = RD_ROOT_DIR.."\\llib\\?.lua",
         }
     end
 
