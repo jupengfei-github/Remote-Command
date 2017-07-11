@@ -1,5 +1,5 @@
 # root directory
-export RD_ROOT_DIR=/opt/jupengfei/.cmd_gui
+export RD_ROOT_DIR=/opt2/jupengfei/.rmd
 export HOST_OS=linux
 
 # lua environment
@@ -17,7 +17,7 @@ source $RD_ROOT_DIR/shell/alias.sh
 export RD_SERVER_IP=
 export RD_SERVER_PORT=30130
 
-export RD_CLIENT_IP=192.168.14.171
+export RD_CLIENT_IP=172.25.105.14
 export RD_CLIENT_PORT=30130
 
 # server address

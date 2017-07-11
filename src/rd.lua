@@ -36,6 +36,11 @@ local custom_remote_command = {
         local cur_path = get_cur_path()
         local file     = nil
 
+        -- open current directory by default
+        if (#tb <= 0) then
+            table.insert(tb, ".")
+        end
+
         if (#tb > 0) then
             file = table.concat(tb, " ")
         end
