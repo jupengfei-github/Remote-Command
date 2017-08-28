@@ -80,13 +80,14 @@ goto :eof
     call :write_server_params %remote_path% %local_path%
 
     ::create server VBScript
-    set start_file=%ROOT_DIR%bat\rd_server.vbs
+    set start_file=%ROOT_DIR%script\rd_server.vbs
     if exist %start_file% del %start_file%
 
     ::install schedule task
-    ::echo Set ws = CreateObject("Wscript.Shell")>%start_file%
-    ::echo ws.run "cmd /c %EXE% %ROOT_DIR%src\rd_server.lua",vbhide>>%start_file% 
-    ::schtasks /create /tn cmd_gui /tr "%start_file%" /sc onlogon
+    echo '======== Auto Generated,Don't Edit ============ > %start_file%
+    echo Set w=CreateObject("Wscript.Shell") >> %start_file%
+    echo ws.run "cmd /c %EXE% %ROOT_DIR%src\rd_server.lua",vbhide >> %start_file%
+    schtasks /create /tn rmd /tr "%start_file%" /sc onlogon
 goto :eof
 
 :write_server_params

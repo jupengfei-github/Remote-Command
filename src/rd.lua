@@ -42,7 +42,6 @@ local custom_remote_command = {
         end
 
         file = table.concat(tb, " ")
-        print(file)
         execute_cmd("view", file, cur_path)
     end,
 }

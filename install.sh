@@ -1,6 +1,6 @@
 #!/bin/bash
 
-local_path=`pwd`/$(dirname $0)
+local_path=`pwd`
 user_bashrc=$HOME/.bashrc
 
 write_server_params () {
@@ -13,7 +13,7 @@ write_server_params () {
             find_tag="true"
         }
 
-        if (find_tag == "true" && ($1 == "}" || $1 == "},")) {
+        if (find_tag == "true" && ($1 == "}" || $1 == "}")) {
             end_line=NR
             find_tag="false"
 
@@ -46,8 +46,10 @@ init_server_params () {
 }
 
 install_server () {
+    local cmd="$local_path/bin/linux/lua"
+    local server_cmd="$cmd $local_path/src/rd_server.lua"
 
-
+    sed -i "/$server_cmd/d" 
 }
 
 init_client_params () {
@@ -68,7 +70,7 @@ init_client_params () {
 sed -i "/RD_ROOT_DIR=/c export RD_ROOT_DIR=$local_path" $local_path/script/rd_init.sh
 
 server=false
-read -p"Are your sure to install server[yes/no] : " answers
+read -p "Are your sure to install server[yes/no] :" answers
 if [ "$answers" == "yes" ]; then
     server=true
 
