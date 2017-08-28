@@ -1,24 +1,27 @@
 # root directory
-export RD_ROOT_DIR=/opt/jupengfei/.rmd
+export RD_ROOT_DIR=/opt/jupengfei/.rmd/.
 export HOST_OS=linux
+
+# Server Mode. Server Listen IP/PORT
+export RD_SERVER_IP=
+export RD_SERVER_PORT=30130
+
+# Client Mode. Client connect IP/PORT
+export RD_CLIENT_IP=172.25.105.14
+export RD_CLIENT_PORT=30130
 
 # lua environment
 export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
 
 # set lua parse position
-export LUA_EXE=$RD_ROOT_DIR/bin/linux/lua
+if ! which lua; then
+    export LUA_EXE=$RD_ROOT_DIR/bin/linux/lua
+fi
 
 # put rd command in standard path
-export PATH=$PATH:$RD_ROOT_DIR/shell
-
+export PATH=$PATH:$RD_ROOT_DIR/script
 # alias 
-source $RD_ROOT_DIR/shell/alias.sh
-
-export RD_SERVER_IP=
-export RD_SERVER_PORT=30130
-
-export RD_CLIENT_IP=172.25.105.14
-export RD_CLIENT_PORT=30130
+source $RD_ROOT_DIR/script/alias.sh
 
 # server address
 get_host_ip_port () {

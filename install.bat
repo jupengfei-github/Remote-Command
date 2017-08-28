@@ -12,12 +12,14 @@ call :get_root_dir
 :: server address
 set SERVER_IP=127.0.0.1
 set SERVER_PORT=30130
+set CLIENT_IP=
+set CLIENT_PORT=30130
 
 call :get_ip_address
 
 if "%ROOT_DIR%"=="" if "%SERVER_IP%"=="" (
    set /p ROOT_DIR=install location :
-   set /p SERVER_IP=host ip address :
+   set /p SERVER_IP=machine ip address :
 )
 
 if "%ROOT_DIR%"=="" if "%SERVER_IP%"=="" (
@@ -27,7 +29,7 @@ if "%ROOT_DIR%"=="" if "%SERVER_IP%"=="" (
 )
 
 :: lua environment
-set INIT=@%ROOT_DIR%\src\lua_init.lua
+set INIT=@%ROOT_DIR%src\lua_init.lua
 set EXE=%ROOT_DIR%bin\win\lua.exe
 
 setx RD_ROOT_DIR    %ROOT_DIR%
@@ -40,6 +42,8 @@ setx LUA_EXE        %EXE%
 set /p answer=Are your sure to install server[yes/no]:
 if %answer%==yes (
    call :install_rd_server
+) else (
+   call :install_rd_client
 )
 
 echo "installation success"
@@ -65,8 +69,8 @@ for /f "tokens=1,2 delims=:" %%i in ('ipconfig') do (
 goto :eof
 
 :install_rd_server
-    set /p remote_path="Enter remote host share path : "
-    set /p local_path="Enter local host share path  : "
+    set /p remote_path="Enter remote share path : "
+    set /p local_path="Enter local mount path  : "
 
     if "%remote_path%"=="" flag=1
     if "%local_path%"==""  flag=1
@@ -75,18 +79,20 @@ goto :eof
 
     call :write_server_params %remote_path% %local_path%
 
+    ::create server VBScript
     set start_file=%ROOT_DIR%bat\rd_server.vbs
     if exist %start_file% del %start_file%
-    
-    echo Set ws = CreateObject("Wscript.Shell")>%start_file%
-    echo ws.run "cmd /c %EXE% %ROOT_DIR%src\rd_server.lua",vbhide>>%start_file% 
-    schtasks /create /tn cmd_gui /tr "%start_file%" /sc onlogon
+
+    ::install schedule task
+    ::echo Set ws = CreateObject("Wscript.Shell")>%start_file%
+    ::echo ws.run "cmd /c %EXE% %ROOT_DIR%src\rd_server.lua",vbhide>>%start_file% 
+    ::schtasks /create /tn cmd_gui /tr "%start_file%" /sc onlogon
 goto :eof
 
 :write_server_params
     set target_file_prefix=server_cfg.lua
-    set target_file=%ROOT_DIR%llib\%target_file_prefix%
-    set bak_file=%ROOT_DIR%llib\%target_file_prefix%.bak
+    set target_file=%ROOT_DIR%src\%target_file_prefix%
+    set bak_file=%ROOT_DIR%src\%target_file_prefix%.bak
     set tag1=share_directory_map
     set tag2=}
 
@@ -117,6 +123,17 @@ goto :eof
 
     del %target_file%
     ren %bak_file% %target_file_prefix%
+goto :eof
+
+:install_rd_client
+    set /p answer=Enter remote server ip [%RD_CLIENT_IP%]:
+    if %RD_CLIENT_IP%=="" if %answer%=="" (
+        echo Invalid server_ip[%answer%]
+        exit
+    )
+
+    setx RD_CLIENT_IP %answer%
+    setx RD_CLIENT_PORT %CLIENT_PORT%
 goto :eof
 
 @echo on

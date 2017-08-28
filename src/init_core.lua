@@ -7,11 +7,11 @@ local built_c_path = function ()
 
     if host_os == "linux" then
         lib_path = {
-            RD_ROOT_DIR.."/lib/linux/?.so",
+            RD_ROOT_DIR .. "/lib/linux/?.so",
         }
     elseif host_os == "win" then
         lib_path = {
-            RD_ROOT_DIR.."lib\\win\\?.dll",
+            RD_ROOT_DIR .. "lib\\win\\?.dll",
         }
     end
 
@@ -24,17 +24,17 @@ local built_lua_path = function ()
 
     if host_os == "linux" then
         lib_path = {
-            [1] = RD_ROOT_DIR.."/llib/linux/?.lua",
-			[2] = RD_ROOT_DIR.."/llib/?.lua",
+            [1] = RD_ROOT_DIR .. "/src/linux/?.lua",
+			[2] = RD_ROOT_DIR .. "/src/?.lua",
         }
     elseif host_os == "win" then
         lib_path = {
-            [1] = RD_ROOT_DIR.."llib\\win\\?.lua",
-			[2] = RD_ROOT_DIR.."\\llib\\?.lua",
+            [1] = RD_ROOT_DIR .. "src\\win\\?.lua",
+			[2] = RD_ROOT_DIR .. "\\src\\?.lua",
         }
     end
 
-    lib_path[#lib_path + 1] = RD_ROOT_DIR.."\\llib\\?.lua"
+    lib_path[#lib_path + 1] = RD_ROOT_DIR .. "\\src\\?.lua"
     return lib_path
 end
 
