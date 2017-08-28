@@ -41,10 +41,8 @@ local custom_remote_command = {
             table.insert(tb, ".")
         end
 
-        if (#tb > 0) then
-            file = table.concat(tb, " ")
-        end
-
+        file = table.concat(tb, " ")
+        print(file)
         execute_cmd("view", file, cur_path)
     end,
 }
