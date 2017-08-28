@@ -1,5 +1,5 @@
 # root directory
-export RD_ROOT_DIR=/opt2/jupengfei/.rmd
+export RD_ROOT_DIR=/opt/jupengfei/.rmd
 export HOST_OS=linux
 
 # lua environment
