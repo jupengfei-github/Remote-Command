@@ -46,7 +46,7 @@ init_server_params () {
 }
 
 install_server () {
-    local cmd="$local_path/bin/linux/lua"
+    local cmd="$local_path/bin/lua"
     local server_cmd="$cmd $local_path/src/rd_server.lua"
 
     sed -i "/$server_cmd/d" 

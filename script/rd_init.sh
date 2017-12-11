@@ -15,7 +15,7 @@ export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
 
 # set lua parse position
 if ! which lua; then
-    export LUA_EXE=$RD_ROOT_DIR/bin/linux/lua
+    export LUA_EXE=$RD_ROOT_DIR/bin/lua
 fi
 
 # put rd command in standard path
