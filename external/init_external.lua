@@ -6,37 +6,16 @@ local preload_lua_dir = RD_ROOT_DIR.."/external/llib/"
 
 local preload_c_path, preload_lua_path
 
--- preload modules for win
-local preload_c_modules_win = {
+local preload_c_modules = {
 	"?.dll",
 }
 
-local preload_lua_modules_win = {
+local preload_lua_modules = {
 	"?.lua",
 }
 
--- preload modules for linux
-local preload_c_modules_linux = {
-
-}
-
-local preload_lua_modules_linux = {
-
-}
-
-if HOST_OS == "win" then
-    preload_c_path = preload_c_modules_win
-    preload_lua_path = preload_lua_modules_win
-	
-	preload_c_dir    = preload_c_dir   .. "win/"
-	preload_lua_dir  = preload_lua_dir .. "win/"
-else
-    preload_c_path   = preload_c_modules_linux
-    preload_lua_path = preload_lua_modules_linux
-	
-	preload_c_dir    = preload_c_dir   .. "linux/"
-	preload_lua_dir  = preload_lua_dir .. "linux/"
-end
+preload_c_path = preload_c_modules
+preload_lua_path = preload_lua_modules
 
 for key, path in pairs(preload_c_path) do
     local real_path = preload_c_dir .. path

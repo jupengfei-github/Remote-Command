@@ -3,36 +3,18 @@ local host_os     = os.getenv("HOST_OS")
 
 -- set custom c search path
 local built_c_path = function ()
-    local lib_path = {}
-
-    if host_os == "linux" then
-        lib_path = {
-            RD_ROOT_DIR .. "/lib/linux/?.so",
+    local lib_path = {
+            RD_ROOT_DIR .. "lib\\?.dll",
         }
-    elseif host_os == "win" then
-        lib_path = {
-            RD_ROOT_DIR .. "lib\\win\\?.dll",
-        }
-    end
-
     return lib_path
 end
 
 -- set custom lua search path
 local built_lua_path = function ()
-    local lib_path = {}
-
-    if host_os == "linux" then
-        lib_path = {
-            [1] = RD_ROOT_DIR .. "/src/linux/?.lua",
-			[2] = RD_ROOT_DIR .. "/src/?.lua",
-        }
-    elseif host_os == "win" then
-        lib_path = {
-            [1] = RD_ROOT_DIR .. "src\\win\\?.lua",
+    local lib_path = {
+            [1] = RD_ROOT_DIR .. "src\\?.lua",
 			[2] = RD_ROOT_DIR .. "\\src\\?.lua",
         }
-    end
 
     lib_path[#lib_path + 1] = RD_ROOT_DIR .. "\\src\\?.lua"
     return lib_path

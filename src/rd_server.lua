@@ -107,31 +107,17 @@ local function get_local_command (cmd, cmd_args, cmd_path)
     cmd_path = get_mapped_path(cmd_path)
     cmd      = get_mapped_cmd(cmd, cmd_args, cmd_path)
 
-    if (os == "win") then
-        cmd_args = string.gsub(cmd_args, "/", "\\")
-        cmd_path = string.gsub(cmd_path, "/", "\\")
-    elseif (os == "linux") then
-        cmd_args = string.gsub(cmd_args, "\\", "/")
-        cmd_path = string.gsub(cmd_path, "\\", "/")
-        ext_command = " & "
-    end
+    cmd_args = string.gsub(cmd_args, "/", "\\")
+    cmd_path = string.gsub(cmd_path, "/", "\\")
 
     target_cmd = server_cfg.remote_cmd_map[cmd]
     target_cmd = target_cmd or cmd
     target_cmd = target_cmd.." "..cmd_args
 
     if (cmd_path and #cmd_path > 0) then
-        if (os == "win") then
-            target_cmd = "cd /d "..cmd_path.." & start /b cmd /c "..target_cmd
-        else
-            target_cmd = "cd "..cmd_path..";"..target_cmd.." & "
-        end
+        target_cmd = "cd /d "..cmd_path.." & start /b cmd /c "..target_cmd
     else
-        if (os == "win") then
-            target_cmd = "start /b cmd /c "..target_cmd
-        else
-            target_cmd = target_cmd.." & "
-        end
+        target_cmd = "start /b cmd /c "..target_cmd
     end
 
     return target_cmd
