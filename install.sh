@@ -46,10 +46,9 @@ init_server_params () {
 }
 
 install_server () {
-    local cmd="$local_path/bin/lua"
-    local server_cmd="$cmd $local_path/src/rd_server.lua"
-
-    sed -i "/$server_cmd/d" 
+    sed -i "s/ROOT/$local_path/" $local_path/script/rmd.service
+    cp $local_path/script/rmd.service /etc/systemd/system
+    systemctl enable rmd.service
 }
 
 init_client_params () {
@@ -75,7 +74,7 @@ if [ "$answers" == "yes" ]; then
     server=true
 
     init_server_params
-    install_server
+    sudo install_server
 else
     init_client_params
 fi

@@ -1,0 +1,12 @@
+[Unit]
+Description=Remote Method Service
+Requires=syslog.service
+
+[Service]
+Type=notify
+ExecStart=ROOT/bin/lua ROOT/src/rd_server.lua
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target
+Alias=rmd.service
