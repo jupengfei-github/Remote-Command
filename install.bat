@@ -30,7 +30,7 @@ if "%ROOT_DIR%"=="" if "%SERVER_IP%"=="" (
 
 :: lua environment
 set INIT=@%ROOT_DIR%src\lua_init.lua
-set EXE=%ROOT_DIR%bin\win\lua.exe
+set EXE=%ROOT_DIR%bin\lua.exe
 
 setx RD_ROOT_DIR    %ROOT_DIR%
 setx RD_SERVER_IP   %SERVER_IP%
@@ -135,6 +135,8 @@ goto :eof
 
     setx RD_CLIENT_IP %answer%
     setx RD_CLIENT_PORT %CLIENT_PORT%
+
+    reg add "hkcu\software\microsoft\command processor" /v Autorun /t reg_sz /d %ROOT_DIR%script/auto_run.cmd
 goto :eof
 
 @echo on

@@ -47,11 +47,21 @@ for /f "delims= " %%i in ("%*") do (
 )
 
 :usage
-    echo "Usage rd [-h host] [-w] <command>"
-    echo "-h target host connect"
-    echo "-w wait for command execute finish"
+    echo "Usage :"
+    echo "   rd [-h host] [-p port] <command>"
+    echo "                                      "
+    echo "      view  [file|directory]  open file in remote host"
+    echo "      custom_cmd  [args]      execute command in remote host"
 goto :eof
 
-@echo on
 echo %parse_server_ip% %parse_server_port%
 echo %specified_server_ip% %specified_server_port%
+
+if %parse_server_ip%=="true"   set RD_SERVER_IP=%specified_server_ip%
+if %parse_server_port%=="true" set RD_SERVER_PORT=%specified_server_port%
+
+if %LUA_EXE%!="" if %param%!="" (
+    %LUA_EXE% %ROOT_DIR%/src/rd.lua %param%
+)
+
+@echo on
