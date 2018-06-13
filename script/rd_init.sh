@@ -1,5 +1,5 @@
 # root directory
-export RD_ROOT_DIR=/opt/jupengfei/.rmd
+export RD_ROOT_DIR=/home/ubuntu/.rmd
 export HOST_OS=linux
 
 # Server Mode. Server Listen IP/PORT
@@ -14,9 +14,7 @@ export RD_CLIENT_PORT=30130
 export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
 
 # set lua parse position
-if ! which lua; then
-    export LUA_EXE=$RD_ROOT_DIR/bin/lua
-fi
+export LUA_EXE=$RD_ROOT_DIR/bin/lua
 
 # put rd command in standard path
 export PATH=$PATH:$RD_ROOT_DIR/script
@@ -25,7 +23,7 @@ source $RD_ROOT_DIR/script/alias.sh
 
 # server address
 get_host_ip_port () {
-    local ip=`ifconfig eth0|awk -F : '/inet /{print $2}'`
+    local ip=`ifconfig eno1|awk -F' ' '/inet /{print $2}'`
     RD_SERVER_IP=${ip%% *}
 }
 
@@ -34,7 +32,7 @@ start_rd_server() {
     local lua_cmd="$LUA_EXE $RD_ROOT_DIR/src/rd_server.lua"
 
     if ! ps -ef|grep -v grep|grep "$lua_cmd" &>/dev/null; then
-        ($lua_cmd &)
+        $lua_cmd &
     fi
 }
 
