@@ -101,7 +101,6 @@ local function get_mapped_path (cmd_path)
 end
 
 local function get_local_command (cmd, cmd_args, cmd_path)
-    local os  = os.getenv("HOST_OS")
     local target_cmd = ""
 
     cmd_path = get_mapped_path(cmd_path)

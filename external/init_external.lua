@@ -1,5 +1,4 @@
 local RD_ROOT_DIR = os.getenv("RD_ROOT_DIR")
-local HOST_OS     = os.getenv("HOST_OS")
 
 local preload_c_dir   = RD_ROOT_DIR.."/external/lib/"
 local preload_lua_dir = RD_ROOT_DIR.."/external/llib/"
