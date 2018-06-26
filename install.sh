@@ -47,10 +47,23 @@ init_server_params () {
     write_server_params $remote_path $local_path
 }
 
-install_server () {
-    sed -i "/ExecStart=/c ExecStart=$current_path/script/rd_server" $current_path/script/rd_server.service
+install_init_script () {
+    local file=$1
 
-    sudo cp $current_path/script/rd_server.service /etc/init.d
+    #Delete exists record
+    bashrc_cmd="source $file"
+
+    if grep "$bashrc_cmd" $user_bashrc 1>/dev/null 2>/dev/null; then
+        line=`grep -n "$bashrc_cmd" $user_bashrc|cut -d: -f1`
+        sed -i "${line}d" $user_bashrc
+    fi
+
+    echo "$bashrc_cmd" >> $user_bashrc
+}
+
+install_server () {
+    sed -i "/ExecStart=/c ExecStart=$current_path/script/rd_server" $current_path/script/rd_server
+    install_init_script $current_path/script/rd_server
 }
 
 init_client_params () {
@@ -65,17 +78,11 @@ init_client_params () {
     fi
 
     sed -i "/RD_SERVER_IP=/c export RD_SERVER_IP=$client_ip" $current_path/script/rd_init
+
+    #set root directory
+    sed -i "/RD_ROOT_DIR=/c export RD_ROOT_DIR=$current_path" $current_path/script/rd_init
+    install_init_script $current_path/script/rd_init
 }
-
-#set root directory
-sed -i "/RD_ROOT_DIR=/c export RD_ROOT_DIR=$current_path" $current_path/script/rd_init
-
-#Delete exists record
-bashrc_cmd="source $current_path/script/rd_init"
-if grep "$bashrc_cmd" $user_bashrc 1>/dev/null 2>/dev/null; then
-    line=`grep -n "$bashrc_cmd" $user_bashrc|cut -d: -f1`
-    sed -i "${line}d" $user_bashrc
-fi
 
 #start server ifNeeded
 read -p"Are your sure to install server[yes/no] : " answers
@@ -84,5 +91,4 @@ if [ "$answers" == "yes" ]; then
     install_server
 else
     init_client_params
-    echo "$bashrc_cmd false" >> $user_bashrc
 fi

@@ -1,72 +1,28 @@
-#!/bin/sh
-# Start/Stop RD_SERVER daemon
-#
-### BEGIN INIT INFO
-# Providers:         rmd
-# Required-Start:    $network $remote-fs
-# Required-Stop:
-# Should-Start:
-# Should-stop:
-# Default-Start:     2 3 4 5
-# Default-Stop:
-# Short-Description: Remote Desktop
-# Description:       Recieve command from Remote Machine then excute
-#                     the command in current machine
-#
-### END INIT INFO
+#!/bin/bash
 
 # root directory
 export RD_ROOT_DIR=/home/ubuntu/.rmd
 
-# Client Mode. Client connect IP/PORT
-export RD_SERVER_IP
-export RD_SERVER_PORT=30130
-
 # lua environment
-export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
 export LUA_EXE=$RD_ROOT_DIR/bin/lua
-
-# put rd command in standard path
-PATH=/bin:/usr/bin:/sbin:/usr/sbin
-PATH=$PATH:$RD_ROOT_DIR/script
-
-DESC="Remote Desktop"
-NAME="rmd"
-PIDFILE=/var/run/rmd.pid
-SCRIPTNAME=/etc/init.d/rd_server
+export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
 
 # server address
-local ip=`ifconfig eno1|awk -F' ' '/inet /{print $2}'`
-export RD_SERVER_IP=${ip%% *}
-DAEMON=$LUA_EXE $RD_ROOT_DIR/src/rd_server.lua
+DAEMON_FILE=$RD_ROOT_DIR/src/rd_server.lua
+DAEMON="$LUA_EXE $DAEMON_FILE"
 
-test -f $DAEMON || exit 0
+function start_server () {
+    # Client Mode. Client connect IP/PORT
+    local ip=`ifconfig eno1|awk -F' ' '/inet /{print $2}'`
+    export RD_SERVER_IP=${ip%% *}
+    export RD_SERVER_PORT=30130
 
-. /lib/lsb/init-functions
-. $RD_ROOT_DIR/script/alias.sh
+    # put rd command in standard path
+    export PATH=$PATH:$RD_ROOT_DIR/script
+    nohup $DAEMON >/dev/null 2>/dev/null &
+}
 
-case "$1" in
-start)  log_daemon_msg "Starting RD_SERVER"
-        start_daemon -p $PIDFILE $DAEMON
-        log_daemon_msg $?
-        ;;
-stop)   log_daemon_msg "Stoping RD_SERVER"
-        killproc -p $PIDFILE $DAEMON
-        RETVAL=$?
-        [ $RETVAL -eq 0 ] && [ -e "$PIDFILE" ] && rm -rf $PIDFILE
-        log_daemon_msg $RETVAL
-	;;
-restart) log_daemon_msg "Restarting RD_SERVER"
-        $0 start
-        $0 stop
-        ;;
-status)
-        status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
-        ;;
-reload|force-reload) log_daemon_msg "RD_SERVER don't need reloading"
-        ;;
-*)
-        log_daemon_msg "Usage /etc/init.d/rd_server {start|stop|restart|status|reload|force-reload}"
-        exit 2
-        ;;
-esac
+daemon_cnt=`ps -ef | grep "$DAEMON" |cut -d' ' -f4 | wc -w`
+if [ "$daemon_cnt" -le 1 ]; then
+    start_server
+fi
