@@ -4,7 +4,7 @@ specified_server_ip=
 specified_server_port=
 
 rd_root_dir=$RD_ROOT_DIR
-rd_init=$rd_root_dir/shell/rd_init.sh
+rd_init=$rd_root_dir/shell/rd_init
 
 usage () {
     echo "Usage : "
@@ -34,11 +34,11 @@ while getopts h:p: option; do
 done
 
 if [ -n "$specified_server_ip"   ]; then
-    sed -i "/export RD_CLIENT_IP=/c export RD_CLIENT_IP=$specified_server_ip" $rd_init
+    sed -i "/export RD_SERVER_IP=/c export RD_SERVER_IP=$specified_server_ip" $rd_init
 fi
 
 if [ -n "$specified_server_port" ]; then
-    sed -i "/export RD_CLIENT_PORT=/c export RD_CLIENT_PORT=$specified_server_port" $rd_init
+    sed -i "/export RD_SERVER_PORT=/c export RD_SERVER_PORT=$specified_server_port" $rd_init
 fi
 
 if [ -n "$OPTIND" ]; then

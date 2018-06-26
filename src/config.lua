@@ -20,10 +20,6 @@ local global_constant_flag = {
 }
 
 local global_config = {
-    -- server ip
-    client_ip   = "-1",
-    client_port = -1, 
-
     -- client ip
     server_ip   = "-1",
     server_port = -1,
@@ -82,11 +78,6 @@ local function check_port_valid (port_str)
         return false
     end
 end
-
-local ip   = os.getenv("RD_CLIENT_IP")
-local port = os.getenv("RD_CLIENT_PORT")
-global_config.client_ip   = check_ip_valid(ip)   and ip   or global_config.client_ip
-global_config.client_port = check_port_valid(port) and port or global_config.client_port
 
 ip   = os.getenv("RD_SERVER_IP")
 port = os.getenv("RD_SERVER_PORT")

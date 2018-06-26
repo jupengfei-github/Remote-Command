@@ -48,50 +48,41 @@ init_server_params () {
 }
 
 install_server () {
-    echo "No Need to Install Systemd Service"
+    sed -i "/ExecStart=/c ExecStart=$current_path/script/rd_server" $current_path/script/rd_server.service
 
-#    sed -i "/ExecStart=/c ExecStart=$current_path/script/rd_init.sh true" $current_path/script/rd_server.service
-#    sudo cp $current_path/script/rd_server.service /etc/systemd/system
-#    systemctl daemon-reload
-#    systemctl enable rd_server.service
-#    systemctl start rd_server.service
-
+    sudo cp $current_path/script/rd_server.service /etc/init.d
 }
 
 init_client_params () {
-    local client_ip=$RD_CLIENT_IP
+    local client_ip=$RD_SERVER_IP
 
     read -p"Enter remote server ip [$client_ip] : " client_ip
-    client_ip=${client_ip:=$RD_CLIENT_IP}
+    client_ip=${client_ip:=$RD_SERVER_IP}
 
     if [ -z "$client_ip" ]; then
        echo "Invalid server_ip[$client_ip]"
        exit 1
     fi
 
-    sed -i "/RD_CLIENT_IP=/c export RD_CLIENT_IP=$client_ip" $current_path/script/rd_init.sh
+    sed -i "/RD_SERVER_IP=/c export RD_SERVER_IP=$client_ip" $current_path/script/rd_init
 }
 
 #set root directory
-sed -i "/RD_ROOT_DIR=/c export RD_ROOT_DIR=$current_path" $current_path/script/rd_init.sh
+sed -i "/RD_ROOT_DIR=/c export RD_ROOT_DIR=$current_path" $current_path/script/rd_init
 
-server=false
-read -p"Are your sure to install server[yes/no] : " answers
-if [ "$answers" == "yes" ]; then
-    server=true
-
-    init_server_params
-    install_server
-else
-    init_client_params
-fi
-
-bashrc_cmd="source $current_path/script/rd_init.sh"
 #Delete exists record
+bashrc_cmd="source $current_path/script/rd_init"
 if grep "$bashrc_cmd" $user_bashrc 1>/dev/null 2>/dev/null; then
     line=`grep -n "$bashrc_cmd" $user_bashrc|cut -d: -f1`
     sed -i "${line}d" $user_bashrc
 fi
-echo "$bashrc_cmd $server" >> $user_bashrc
 
-
+#start server ifNeeded
+read -p"Are your sure to install server[yes/no] : " answers
+if [ "$answers" == "yes" ]; then
+    init_server_params
+    install_server
+else
+    init_client_params
+    echo "$bashrc_cmd false" >> $user_bashrc
+fi

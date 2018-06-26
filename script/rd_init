@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# root directory
+export RD_ROOT_DIR=/home/ubuntu/.rmd
+
+# Server Mode. Server Listen IP/PORT
+export RD_SERVER_IP=
+export RD_SERVER_PORT=30130
+
+# lua environment
+export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
+# set lua parse position
+export LUA_EXE=$RD_ROOT_DIR/bin/lua
+
+# put rd command in standard path
+export PATH=$PATH:$RD_ROOT_DIR/script
+
+# alias 
+. $RD_ROOT_DIR/script/alias.sh

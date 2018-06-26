@@ -1,5 +1,4 @@
 local RD_ROOT_DIR = os.getenv("RD_ROOT_DIR")
-local host_os     = os.getenv("HOST_OS")
 
 -- set custom c search path
 local built_c_path = function ()
