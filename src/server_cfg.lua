@@ -1,9 +1,10 @@
 -- custom remote command                          
 local remote_cmd_map = {                         
-    explore  = "dolphin 2>/dev/null",                       
-    file     = "subl",                         
+    explore  = "pcmanfm 2>/dev/null",                       
+    file     = "emacs",                         
     search   = "krunner",                         
     compare  = "vimdiff",                         
+    subl     = "subl",
 }
 
 -- command for specified file                         
@@ -13,7 +14,7 @@ local file_type_map = {
 
 -- shared directory. Don't edit this. Auto generated                         
 local share_directory_map = {                                      
-        ["/opt/jupengfei"] = "/home/ubuntu/compile",
+        ["/opt/jupengfei"] = "~/compile",
 }		
 
 server_cfg = {                          

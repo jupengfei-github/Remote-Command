@@ -1,5 +1,3 @@
 alias v='rd view'
-alias subl='rd file'
-alias adb='rd adb'
-alias sc='rd search'
-alias cmp='rd compare'
+alias note='rd file'
+alias subl='rd subl'

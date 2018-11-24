@@ -22,7 +22,7 @@ function start_server () {
     nohup $DAEMON >/dev/null 2>/dev/null &
 }
 
-daemon_cnt=`ps -ef | grep "$DAEMON" |cut -d' ' -f4 | wc -w`
+daemon_cnt=`ps -ef | grep "$DAEMON" |wc -l`
 if [ "$daemon_cnt" -le 1 ]; then
     start_server
 fi
