@@ -85,7 +85,7 @@ goto :eof
 
     ::install schedule task
     echo '======== Auto Generated,Don't Edit ============ > %start_file%
-    echo Set w=CreateObject("Wscript.Shell") >> %start_file%
+    echo Set ws=CreateObject("Wscript.Shell") >> %start_file%
     echo ws.run "cmd /c %EXE% %ROOT_DIR%src\rd_server.lua",vbhide >> %start_file%
     schtasks /create /tn rmd /tr "%start_file%" /sc onlogon
 goto :eof
