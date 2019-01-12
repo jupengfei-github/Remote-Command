@@ -5,12 +5,12 @@ local PDU     = require("pdu")
 
 local LOG_TAG = "rd_client"
 
-local function get_cur_path () 
+local function get_cur_path ()
     return os.getenv("PWD")
 end
 
 -- excute command
-local function execute_cmd (cmd, args, cmd_path) 
+local function execute_cmd (cmd, args, cmd_path)
     local pdu = CMD_PDU.instance(PDU.instance(true))
 
     pdu:init(GLOBAL_CONSTANT_FLAG.DATA_TYPE_CMD, GLOBAL_CONSTANT_FLAG.MSG_TYPE_REQ)
@@ -24,7 +24,7 @@ local function execute_cmd (cmd, args, cmd_path)
     end
 end
 
-local function default_remote_command (cmd, tb) 
+local function default_remote_command (cmd, tb)
     local args     = table.concat(tb, " ")
     local cur_path = get_cur_path()
 
@@ -32,7 +32,7 @@ local function default_remote_command (cmd, tb)
 end
 
 local custom_remote_command = {
-    view = function (tb) 
+    view = function (tb)
         local cur_path = get_cur_path()
         local file     = nil
 
@@ -53,6 +53,9 @@ else
     sub_command = arg[1]
     table.remove(arg, 1)
 end
+
+local cur_path = os.getenv("RD_ROOT_DIR")
+dofile(cur_path .. "/core/config.lua")
 
 for cmd, cmd_proc in pairs(custom_remote_command) do
     if (cmd == sub_command) then

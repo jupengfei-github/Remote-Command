@@ -7,9 +7,9 @@ local LOG_TAG = "rd_server"
 
 local function get_note_cus_cmd (suffix)
     local cmd = nil
-    
+
     for ftype, fcmd in pairs(server_cfg.file_type_map) do
-        local s, e = string.find(ftype, suffix)    
+        local s, e = string.find(ftype, suffix)
 
         if ((s == 1 or (s ~= nil and string.sub(ftype, s - 1, s - 1) == ":")) and
             (e == string.len(ftype) or (e ~= nil and string.sub(ftype, e + 1, e + 1) == ":"))) then
@@ -21,7 +21,7 @@ local function get_note_cus_cmd (suffix)
     return cmd
 end
 
-local function get_note_sys_cmd (suffix) 
+local function get_note_sys_cmd (suffix)
     local file_type, file_cmd
 
     local type_file = io.popen("assoc ." .. suffix, "r")
@@ -50,7 +50,7 @@ local function get_note_sys_cmd (suffix)
 end
 
 local custom_remote_command = {
-    view = function (cmd, cmd_args, cmd_path) 
+    view = function (cmd, cmd_args, cmd_path)
         local local_cmd = nil
 
         if (cmd_args ~= nil) then
@@ -65,12 +65,12 @@ local custom_remote_command = {
         if (local_cmd == nil) then
             local_cmd = server_cfg.remote_cmd_map.explore
         end
-            
+
         return local_cmd
     end,
 }
 
-local function get_mapped_cmd (cmd, cmd_args, cmd_path) 
+local function get_mapped_cmd (cmd, cmd_args, cmd_path)
     local remote_cmd = cmd
 
     if (custom_remote_command[cmd] ~= nil) then
@@ -87,7 +87,7 @@ local function get_mapped_cmd (cmd, cmd_args, cmd_path)
     return remote_cmd
 end
 
-local function get_mapped_path (cmd_path) 
+local function get_mapped_path (cmd_path)
     local new_path = nil
 
     for remote_path, local_path in pairs(server_cfg.share_directory_map) do
@@ -164,13 +164,19 @@ local function handle_client (socket)
 end
 
 ------------------- Main Function ------------------------
+local cur_path = os.getenv("RD_ROOT_DIR")
+dofile(cur_path .. "/core/config.lua")
+
 local server_socket = Socket.server(GLOBAL_CONFIG.server_ip, GLOBAL_CONFIG.server_port)
 if (server_socket == nil) then
     Log.e(LOG_TAG, "rd_server create failed")
-    return 
+    return
 end
 
-repeat 
+-- load server params
+dofile(cur_path .. "/core/server_params.lua")
+
+repeat
     local socket = server_socket:listen()
     if (socket ~= nil) then
         handle_client(socket)

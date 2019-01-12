@@ -1,3 +1,21 @@
+-- Copyright (C) 2018-2024 The Remote-Command Project
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+--
+-- Wrapper For C Module libsocket
+--
+
 local Log       = require("log")
 local libsocket = require("libsocket")
 
@@ -26,10 +44,9 @@ function Socket.server (ip, port)
     ipaddr = assert(ip)
     ipport = assert(port)
 
-    Log.d(LOG_TAG, "create server socket ["..ipaddr.." "..ipport.."]")
     fd = libsocket.server_socket(ipaddr, ipport)
     if (fd < 0) then
-        Log.d(LOG_TAG, "lua mode socket create  server_socket failed")
+        Log.d(LOG_TAG, "lsocket create server_socket " .. ipaddr .. ":" .. ipport .. "failed")
         return nil
     end
 
@@ -49,10 +66,9 @@ function Socket.client (ip, port)
     ipaddr = assert(ip)
     ipport = assert(port)
 
-    Log.d(LOG_TAG, "create client socket ["..ipaddr.." "..ipport.."]")
     fd = libsocket.client_socket(ipaddr, ipport)
     if (fd < 0) then
-        Log.d(LOG_TAG, "lua mode socket create client_socket failed")
+        Log.d(LOG_TAG, "lsocket create client_socket " .. ipaddr .. ":" .. ipport .. "failed")
         return nil
     end
 
@@ -60,7 +76,7 @@ function Socket.client (ip, port)
         ipaddr = ipaddr,
         ipport = ipport,
         fd     = fd,
-        server = false 
+        server = false
     })
 end
 
@@ -71,7 +87,7 @@ function socket_metatable:close()
 end
 
 function socket_metatable:send (msg)
-    if (msg ~= nil and self.server == false) then
+    if (self.server == false) then
         local msg_table = {
             msg,
             "\n",  --compatibal for windows
@@ -109,7 +125,7 @@ function socket_metatable:listen ()
         return nil
     end
 
-    local fd = libsocket.listen_connect (self.fd) 
+    local fd = libsocket.listen_connect (self.fd)
     if (fd >= 0) then
         return create_socket ({
             ipaddr = self.ipaddr,

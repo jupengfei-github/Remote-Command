@@ -1,14 +1,14 @@
 #!/bin/sh
 
 # root directory
-export RD_ROOT_DIR=/home/ubuntu/.rmd
+export RD_ROOT_DIR=/opt/jupengfei/.Remote-Command
 
 # Server Mode. Server Listen IP/PORT
-export RD_SERVER_IP=
+export RD_SERVER_IP=172.25.124.66
 export RD_SERVER_PORT=30130
 
 # lua environment
-export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
+export LUA_INIT=@$RD_ROOT_DIR/lua_init.lua
 # set lua parse position
 export LUA_EXE=$RD_ROOT_DIR/bin/lua
 
@@ -16,4 +16,4 @@ export LUA_EXE=$RD_ROOT_DIR/bin/lua
 export PATH=$PATH:$RD_ROOT_DIR/script
 
 # alias 
-. $RD_ROOT_DIR/script/alias.sh
+. $RD_ROOT_DIR/alias

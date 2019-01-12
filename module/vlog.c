@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2018-2024 The Remote-Command Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifndef _LOG_C_
 #define _LOG_C_
 
@@ -29,7 +45,7 @@
 #define max(a, b) ((a) > (b)? (a) : (b))
 
 typedef enum _BOOL {
-    TRUE, FALSE 
+    TRUE, FALSE
 }BOOL;
 
 /* use linux syslog */
@@ -55,7 +71,7 @@ static BOOL syslog_exists () {
     if (file == NULL)
         return FALSE;
 
-    char* p = fgets(buf, 100 - 1, file);
+    fgets(buf, 100 - 1, file);
     pclose(file);
 
     char* p = strstr(buf, "syslog");
@@ -69,7 +85,7 @@ static int init_sys_log (void) {
         openlog("", LOG_PID, LOG_USER);
 }
 
-static BOOL log_sys (char* tag, char* msg) {
+static BOOL log_sys (const char* tag, const char* msg) {
     if (support_sys_log) {
         syslog(LOG_LEVEL, "[%s] %s\n", tag, msg);
         return TRUE;
@@ -86,7 +102,7 @@ static char* translate_directory (const char *path) {
     if (path == NULL)
         return NULL;
 
-    new_path = (char*)malloc(LOG_FILE_LENGTH * sizeof(char)); 
+    new_path = (char*)malloc(LOG_FILE_LENGTH * sizeof(char));
     if(new_path == NULL) {
         printf("init_file_log failed. malloc new space failed");
         return NULL;
@@ -100,12 +116,12 @@ static char* translate_directory (const char *path) {
         }
 
         cplen = min(strlen(home), LOG_FILE_LENGTH - 1);
-        memcpy(new_path, home, cplen); 
+        memcpy(new_path, home, cplen);
         len += cplen;
 
         cplen = min(strlen(path + 1), LOG_FILE_LENGTH - 1 - cplen);
         memcpy(new_path + strlen(home), path + 1, cplen);
-        len += cplen; 
+        len += cplen;
 
         new_path[len] = '\0';
     }
@@ -136,7 +152,7 @@ static int init_file_log (void) {
     return 1;
 }
 
-static BOOL log_file (char *tag, char *str) {
+static BOOL log_file (const char *tag, const char *str) {
     struct timeval t;
     struct iovec   iov[5];
     char spid[20], time[20];
@@ -148,9 +164,6 @@ static BOOL log_file (char *tag, char *str) {
     gettimeofday(&t, 0);
     sprintf(spid,  " %d %d ", (int)getpid(), (int)pthread_self());
     sprintf(time, " %ld ", t.tv_usec);
-
-    if (tag == NULL) tag = "";
-    if (str == NULL) str = "";
 
     iov[0].iov_base = time;
     iov[0].iov_len  = strlen(time);
@@ -165,17 +178,14 @@ static BOOL log_file (char *tag, char *str) {
 
     int ret = writev(file_log_fd, iov, sizeof(iov)/sizeof(struct iovec));
     if (ret < 0)
-        printf("write msg[%s : %s] fail %d : %s\n", tag, str, path, errno, strerror(errno));
+        printf("write msg[%s : %s] fail %d : %s\n", tag, str, errno, strerror(errno));
 
     return ret > 0? TRUE : FALSE;
 }
 
-static void log_local (char *tag, char *str) {
+static void log_local (const char *tag, const char *str) {
     struct timeval t;
     char spid[20], time[20];
-
-    if (tag == NULL) tag = "";
-    if (str == NULL) str = "";
 
     gettimeofday(&t, 0);
     sprintf(spid, " %d %d ", (int)getpid(), (int)pthread_self());
@@ -200,11 +210,11 @@ void close_log () {
         close(file_log_fd);
 }
 
-static void log_msg (char *tag, char *msg) {
+static void log_msg (const char *tag, const char *msg) {
     BOOL handle = FALSE;
 
     init_log();
-    
+
     if (use_sys_log)
         handle = log_sys(tag, msg);
 
@@ -223,7 +233,7 @@ void vlog (char *str, ...) {
 
     if (str == NULL)
         return;
-    
+
     va_start(vlist, str);
     vsnprintf(buf, sizeof(buf), str, vlist);
     va_end(vlist);
@@ -239,7 +249,7 @@ static int lua_log (lua_State *lua) {
     const char* tag = (char*)luaL_checkstring(lua, 1);
     const char* msg = (char*)luaL_checkstring(lua, 2);
 
-    log_msg(tag, msg);
+    log_msg(tag == NULL? "" : tag, msg == NULL? "" : tag);
     return 0;
 }
 

@@ -4,7 +4,7 @@ specified_server_ip=
 specified_server_port=
 
 rd_root_dir=$RD_ROOT_DIR
-rd_init=$rd_root_dir/shell/rd_init
+rd_init=$rd_root_dir/rd_init
 
 usage () {
     echo "Usage : "
@@ -46,7 +46,7 @@ if [ -n "$OPTIND" ]; then
 fi
 
 if [ -n "$LUA_EXE" ] && [ $# -gt 0 ]; then
-    $LUA_EXE $RD_ROOT_DIR/src/rd.lua $@
+    $LUA_EXE $RD_ROOT_DIR/core/rd.lua $@
 fi
 
 unset specified_server_ip

@@ -2,42 +2,23 @@
 
 current_path=`pwd`
 user_bashrc=$HOME/.bashrc
+server_dirs=config/server_dirs
 
 write_server_params () {
     local remote_path=$1 local_path1=$2
-    local target_file=$current_path/src/server_cfg.lua
+    local target_file=$current_path/$server_dirs
 
-    local str=`awk -F' ' -v tag=share_directory_map '{
-        if (tag == $2) {
-            start_line=NR
-            find_tag="true"
-        }
+    sed -i "/$remote_path/d" $target_file
 
-        if (find_tag == "true" && ($1 == "}" || $1 == "}," || $0 == "}")) {
-            end_line=NR
-            printf("%s %s", start_line, end_line)
-            exit
-        }
-    }' $target_file`
-
-    local start_line=${str% *}
-    local end_line=${str#* }
-
-    local number=`expr $start_line + 1`
-    while [ $number -lt $end_line ]; do
-        sed -i "${number}d" $target_file
-        end_line=`expr $end_line - 1`
-    done
-
-    data="       [\"$remote_path\"] = \"${local_path1}\","
-    sed -i "$start_line a\ $data" $target_file
+    local data = "$remote_path $local_path"
+    echo $data >> $target_file
 }
 
 init_server_params () {
     local remote_path local_path
 
-    read -p"Enter remote share path : " remote_path
-    read -p"Enter local mount path  : " local_path
+    read -p"Enter remote share path [ex: /opt/ubuntu] : " remote_path
+    read -p"Enter local mount path  [ex: c: ] : " local_path
 
     if [ -z "$remote_path" -o -z "$local_path" ]; then
         echo "Invalid remote_path[$remote_path] local_path[$local_path]"
@@ -77,11 +58,13 @@ init_client_params () {
        exit 1
     fi
 
-    sed -i "/RD_SERVER_IP=/c export RD_SERVER_IP=$client_ip" $current_path/script/rd_init
+    sed -i "/RD_SERVER_IP=/c export RD_SERVER_IP=$client_ip" $current_path/rd_init
 
     #set root directory
-    sed -i "/RD_ROOT_DIR=/c export RD_ROOT_DIR=$current_path" $current_path/script/rd_init
-    install_init_script $current_path/script/rd_init
+    sed -i "/RD_ROOT_DIR=/c export RD_ROOT_DIR=$current_path" $current_path/rd_init
+    install_init_script $current_path/rd_init
+
+    source $user_bashrc
 }
 
 #start server ifNeeded
@@ -92,3 +75,7 @@ if [ "$answers" == "yes" ]; then
 else
     init_client_params
 fi
+
+unset current_path
+unset user_bashrc
+unset server_dirs
