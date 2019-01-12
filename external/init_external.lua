@@ -25,4 +25,3 @@ for key, path in pairs(preload_lua_path) do
     local real_path = preload_lua_dir .. path
     package.path = package.path ..";".. real_path
 end
-

@@ -22,7 +22,7 @@
 #define LOG_FILE_LENGTH   120
 
 #ifndef LOG_TAG
-#define LOG_TAG           ("Unknown")
+#define LOG_TAG           ("rmd")
 #endif
 
 #define min(a, b) ((a) > (b)? (b) : (a))
@@ -32,57 +32,59 @@ typedef enum _BOOL {
     TRUE, FALSE 
 }BOOL;
 
-/* logsystem we use. we support syslog and file_log in linux
- * and only file_log in windows 
- */
-static BOOL use_sys_log = FALSE, use_file_log =  TRUE;
-static int sys_log_fd  = -1,    file_log_fd  = -1;
+/* use linux syslog */
+static BOOL use_sys_log = TRUE;
+static BOOL support_sys_log;
+static int sys_log_fd;
+
+/* use normal file */
+static BOOL use_file_log = TRUE;
+static int file_log_fd;
 
 /* file log path */
-static char FILE_LOG_PATH[100] = {"~/.cmd_gui.log"};
+static char FILE_LOG_PATH[] = {"~/.rmd.log"};
 
 /* weather close log once log finished everytime */
 static BOOL close_log_once = FALSE;
 
-static int syslog_exists () {
-    char buf[100];
-    char *p;
-    FILE *file = NULL;
+/* weather syslog running */
+static BOOL syslog_exists () {
+    char buf[100] = {0};
 
-    file = popen("ps -e|grep syslog", "r");
+    FILE* file = popen("ps -e|grep syslog", "r");
     if (file == NULL)
-        return -1;
+        return FALSE;
 
-    p = fgets(buf, 100, file);
-    if (p == 0)
-        return -1;
-
-    p = strstr(buf, "syslog");
+    char* p = fgets(buf, 100 - 1, file);
     pclose(file);
 
-    if (p)
-        return 0;
-    else
-        return -1;
+    char* p = strstr(buf, "syslog");
+    return p == NULL? FALSE : TRUE;
 }
 
+/* open syslog */
 static int init_sys_log (void) {
-    if (syslog_exists()) {
-        sys_log_fd = -1;
-        printf("init_sys_log failed. don't found syslog in current system");
-    }
-    else {
+    support_sys_log = syslog_exists();
+    if (support_sys_log)
         openlog("", LOG_PID, LOG_USER);
-        sys_log_fd = 0;
-    }
-
-    return sys_log_fd;
 }
 
-/* you may need to free memory return by this function */
-static char* translate_directory (char *path) {
-    char *home = NULL, *new_path = NULL, *p = NULL;
+static BOOL log_sys (char* tag, char* msg) {
+    if (support_sys_log) {
+        syslog(LOG_LEVEL, "[%s] %s\n", tag, msg);
+        return TRUE;
+    }
+    else
+        return FALSE;
+}
+
+/* you must need to free memory return by this function */
+static char* translate_directory (const char *path) {
+    char *home = NULL, *new_path = NULL;
     int  len = 0, cplen = 0;
+
+    if (path == NULL)
+        return NULL;
 
     new_path = (char*)malloc(LOG_FILE_LENGTH * sizeof(char)); 
     if(new_path == NULL) {
@@ -90,8 +92,7 @@ static char* translate_directory (char *path) {
         return NULL;
     }
 
-    p = strstr(path, "~");   
-    if(p != NULL) {
+    if(path[0] == '~') {
         if((home = getenv("HOME")) == NULL) {
             free(new_path);
             printf("init_file_log failed. can't found home direcotry");
@@ -102,8 +103,8 @@ static char* translate_directory (char *path) {
         memcpy(new_path, home, cplen); 
         len += cplen;
 
-        cplen = min(strlen(p + 1), LOG_FILE_LENGTH - 1 - cplen);
-        memcpy(new_path + strlen(home), p + 1, cplen);
+        cplen = min(strlen(path + 1), LOG_FILE_LENGTH - 1 - cplen);
+        memcpy(new_path + strlen(home), path + 1, cplen);
         len += cplen; 
 
         new_path[len] = '\0';
@@ -117,61 +118,39 @@ static char* translate_directory (char *path) {
     return new_path;
 }
 
+/* open rmd.log file */
 static int init_file_log (void) {
-    int  fd;
-    char *dir_name, *home, *path;
-    int ret = 0;
+    char *path = NULL;
 
     if((path = translate_directory(FILE_LOG_PATH)) == NULL)
-        return -1;
+        return 0;
 
-    fd = access(path, F_OK);
-    if (fd >= 0) {
-        fd = access(path, W_OK);
-        if (fd >= 0)
-            goto new_file;
-        else {
-            printf("need permission to write log_file, please select another file\n");
-            ret = -1;
-            goto error;
-        }
-    }
-    else {
-        dir_name = dirname(strdup(path));
-        if (dir_name != NULL && access(dir_name, F_OK))
-            mkdir(dir_name, S_IRWXU|S_IRGRP|S_IROTH);
-        
-       // free(dir_name);
-    }
-
-new_file:
     file_log_fd = open(path, O_WRONLY | O_CREAT | O_APPEND,S_IRWXU | S_IRGRP | S_IROTH);
+    free(path);
+
     if (file_log_fd < 0) {
         printf("open file_log [%s] failed %d : %s\n", path, errno, strerror(errno));
-        ret = -1;
+        return 0;
     }
 
-error:
-    free(path);
-    return ret;
+    return 1;
 }
 
-static void file_log (char *tag, char *str) {
+static BOOL log_file (char *tag, char *str) {
     struct timeval t;
     struct iovec   iov[5];
-    pid_t pid;
-    int   tid;
-
     char spid[20], time[20];
     char enter[] = "\n";
-    int len;
+
+    if (file_log_fd < 0)
+        return FALSE;
 
     gettimeofday(&t, 0);
-    pid = getpid();
-    tid = pthread_self();
-
-    sprintf(spid,  " %d %d ", pid, tid);
+    sprintf(spid,  " %d %d ", (int)getpid(), (int)pthread_self());
     sprintf(time, " %ld ", t.tv_usec);
+
+    if (tag == NULL) tag = "";
+    if (str == NULL) str = "";
 
     iov[0].iov_base = time;
     iov[0].iov_len  = strlen(time);
@@ -184,38 +163,33 @@ static void file_log (char *tag, char *str) {
     iov[4].iov_base = enter;
     iov[4].iov_len  = strlen(enter);
 
-    writev(file_log_fd, iov, sizeof(iov)/sizeof(struct iovec));
+    int ret = writev(file_log_fd, iov, sizeof(iov)/sizeof(struct iovec));
+    if (ret < 0)
+        printf("write msg[%s : %s] fail %d : %s\n", tag, str, path, errno, strerror(errno));
+
+    return ret > 0? TRUE : FALSE;
 }
 
-static void local_log (char *tag, char *str) {
+static void log_local (char *tag, char *str) {
     struct timeval t;
     char spid[20], time[20];
+
+    if (tag == NULL) tag = "";
+    if (str == NULL) str = "";
 
     gettimeofday(&t, 0);
     sprintf(spid, " %d %d ", (int)getpid(), (int)pthread_self());
     sprintf(time, " %ld ", t.tv_usec);
 
-    printf("%s %s %s %s\n", time, spid, tag, str);    
+    printf("%s %s %s %s\n", time, spid, tag, str);
 }
 
-static void log_msg (char *tag, char *msg) {
-    BOOL handle = FALSE;
+static void init_log () {
+    if (use_sys_log)
+        init_sys_log();
 
-    if (msg == NULL || tag == NULL)
-        return;
-    
-    if (use_sys_log == TRUE && (sys_log_fd >= 0 || !init_sys_log())) {
-        syslog(LOG_LEVEL, "[%s] %s\n", tag, msg);
-        handle = TRUE;
-    }
-
-    if (use_file_log == TRUE && (file_log_fd >= 0 || !init_file_log())) {
-        file_log(tag, msg);
-        handle = TRUE;
-    }
-
-    if (handle == FALSE)
-        local_log(tag, msg);
+    if (use_file_log)
+        init_file_log();
 }
 
 void close_log () {
@@ -224,6 +198,23 @@ void close_log () {
 
     if (use_file_log == TRUE && file_log_fd >= 0)
         close(file_log_fd);
+}
+
+static void log_msg (char *tag, char *msg) {
+    BOOL handle = FALSE;
+
+    init_log();
+    
+    if (use_sys_log)
+        handle = log_sys(tag, msg);
+
+    if (use_file_log)
+        handle = log_file(tag, msg);
+
+    close_log();
+
+    if (!handle)
+        log_local(tag, msg);
 }
 
 void vlog (char *str, ...) {
@@ -238,36 +229,21 @@ void vlog (char *str, ...) {
     va_end(vlist);
 
     log_msg (LOG_TAG, buf);
-
-    if (close_log_once == TRUE)
-        close_log();
 }
 
-void set_sys_log (int b) {
-    use_sys_log = (BOOL)b;   
-}
-
-void set_file_log (int b) {
-    use_file_log = (BOOL)b;
-}
-
-void set_close_once (int b) {
-    close_log_once = (BOOL)b;
-}
-
+/**
+ * param string
+ * param string
+ */
 static int lua_log (lua_State *lua) {
-    char *msg = NULL;
-    char *tag = NULL;
+    const char* tag = (char*)luaL_checkstring(lua, 1);
+    const char* msg = (char*)luaL_checkstring(lua, 2);
 
-    tag = (char*)luaL_checkstring(lua, 1);
-    msg = (char*)luaL_checkstring(lua, 2);
-
-    set_close_once(1);
     log_msg(tag, msg);
-
     return 0;
 }
 
+/* register liblog module */
 int luaopen_liblog (lua_State *lua) {
     struct luaL_Reg method[] = {
         {"log",           lua_log},
