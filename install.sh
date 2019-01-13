@@ -57,7 +57,7 @@ init_client_params () {
        exit 1
     fi
 
-    #set root directory
+    sed -i "/export RD_SERVER_IP=/c export RD_SERVER_IP=$client_ip" $current_path/rd_init
     sed -i "/RD_ROOT_DIR=/c export RD_ROOT_DIR=$current_path" $current_path/rd_init
     install_init_script $current_path/rd_init
 
