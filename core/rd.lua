@@ -1,4 +1,3 @@
-local Log     = require("log")
 local Socket  = require("lsocket")
 local CMD_PDU = require("cmd_pdu")
 local PDU     = require("pdu")

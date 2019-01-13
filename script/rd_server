@@ -5,10 +5,10 @@ export RD_ROOT_DIR=/home/ubuntu/.Remote-Command
 
 # lua environment
 export LUA_EXE=$RD_ROOT_DIR/bin/lua
-export LUA_INIT=@$RD_ROOT_DIR/src/lua_init.lua
+export LUA_INIT=@$RD_ROOT_DIR/lua_init.lua
 
 # server address
-DAEMON_FILE=$RD_ROOT_DIR/src/rd_server.lua
+DAEMON_FILE=$RD_ROOT_DIR/core/rd_server.lua
 DAEMON="$LUA_EXE $DAEMON_FILE"
 
 function start_server () {

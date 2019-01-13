@@ -117,8 +117,8 @@ err:
 static int server_socket (lua_State *lua) {
     struct sockaddr_in addr;
 
-    const char* ip   = (char*)luaL_checkstring(lua, 1);
-    lua_Number  port = (unsigned int)luaL_checkinteger(lua, 2);
+    const char* ip   = luaL_checkstring(lua, 1);
+    lua_Integer port = luaL_checkinteger(lua, 2);
 
     if (!check_ip_address(ip) || !check_ip_port(port)) {
         vlog("illegal argument ip[%s] port[%d]", ip == NULL? "NULL" : ip, port);
@@ -215,7 +215,7 @@ static int send_data (lua_State *lua) {
     }
 
     lua_pushnil(lua); /* first key */
-    while (!lua_next(lua, 2)) {
+    while (lua_next(lua, -2)) {
         line = luaL_checkstring(lua, -1); 
         lua_pop(lua, 1);
 
@@ -244,7 +244,6 @@ static int close_socket (lua_State *lua) {
 
 /**
  * param : lua_Integer
- * param : table
  * return: [int table]/[nil]
  */
 static int recv_data  (lua_State *lua) {
@@ -295,9 +294,9 @@ err:
 static int listen_connect (lua_State *lua) {
     struct pollfd fds[1];
     struct sockaddr_in addr;
-    int sockfd, len, new_sockfd;
+    int len, new_sockfd;
 
-    sockfd = (int)luaL_checkinteger(lua, 1);
+    lua_Integer sockfd = luaL_checkinteger(lua, 1);
     if (sockfd < 0) {
         vlog("invalid socket fd [%d]", sockfd);
         goto err;
@@ -319,33 +318,6 @@ err:
     return 1;
 }
 
-/**
- * param : lua_Number
- * return: int
- */
-static int listen_socket (lua_State *lua) {
-    struct pollfd fds[1];
-    int poll_ret;
-    int len = 0;
-
-    lua_Number sockfd = (int)luaL_checkinteger(lua, 1);
-    if (sockfd < 0) {
-        vlog("invalid socket fd [%d]", sockfd);
-        return -1;
-    }
-
-    fds[0].fd = sockfd;
-    fds[0].events = POLLIN;
-
-    poll_ret = poll(fds, 1, POLL_TIMEOUT);
-    if (poll_ret >= 0 && fds[0].revents & POLLIN)
-        lua_pushinteger(lua, 0);
-    else
-        lua_pushinteger(lua, -1);
-
-    return 1;
-}
-
 /* register libsocket module */
 int luaopen_libsocket (lua_State *lua) {
     struct luaL_Reg method[] = {
@@ -355,7 +327,6 @@ int luaopen_libsocket (lua_State *lua) {
         {"send_data",     send_data},
         {"recv_data",     recv_data},
         {"listen_connect",listen_connect},
-        {"listen_socket", listen_socket},
         {NULL, NULL}
     };
 

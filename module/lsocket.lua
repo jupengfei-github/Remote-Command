@@ -19,8 +19,6 @@
 local Log       = require("log")
 local libsocket = require("libsocket")
 
-local LOG_TAG   = "Socket"
-
 local socket_metatable = {}
 local function create_socket (sk)
     local socket = sk or {
@@ -46,7 +44,7 @@ function Socket.server (ip, port)
 
     fd = libsocket.server_socket(ipaddr, ipport)
     if (fd < 0) then
-        Log.d(LOG_TAG, "lsocket create server_socket " .. ipaddr .. ":" .. ipport .. "failed")
+        Log.d("lsocket create server_socket " .. ipaddr .. ":" .. ipport .. " failed")
         return nil
     end
 
@@ -68,7 +66,7 @@ function Socket.client (ip, port)
 
     fd = libsocket.client_socket(ipaddr, ipport)
     if (fd < 0) then
-        Log.d(LOG_TAG, "lsocket create client_socket " .. ipaddr .. ":" .. ipport .. "failed")
+        Log.d("lsocket create client_socket " .. ipaddr .. ":" .. ipport .. " failed")
         return nil
     end
 
@@ -95,13 +93,13 @@ function socket_metatable:send (msg)
 
         libsocket.send_data(self.fd, msg_table)
     else
-        Log.d(LOG_TAG, "must be client socket")
+        Log.d("must be client socket")
     end
 end
 
 function socket_metatable:recv ()
     if (self.server == true) then
-        Log.d(LOG_TAG, "must be client socket")
+        Log.d("must be client socket")
         return nil
     end
 
@@ -116,12 +114,12 @@ end
 
 function socket_metatable:listen ()
     if (self.server == false) then
-        Log.d(LOG_TAG, "must be server client")
+        Log.d("must be server client")
         return nil
     end
 
     if (self.listening == true) then
-        Log.d(LOG_TAG, "have been listen")
+        Log.d("have been listen")
         return nil
     end
 
@@ -134,7 +132,7 @@ function socket_metatable:listen ()
             server = false 
         })
     else
-        Log.e(LOG_TAG, "listen at ["..self.ipaddr.." "..self.ipport.." failed]")
+        Log.e("listen at ["..self.ipaddr..":"..self.ipport.." failed]")
         return nil
     end
 end

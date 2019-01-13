@@ -33,13 +33,10 @@
 #include <sys/uio.h>
 #include <sys/fcntl.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 #define LOG_LEVEL         0
 #define LOG_FILE_LENGTH   120
-
-#ifndef LOG_TAG
-#define LOG_TAG           ("rmd")
-#endif
 
 #define min(a, b) ((a) > (b)? (b) : (a))
 #define max(a, b) ((a) > (b)? (a) : (b))
@@ -49,7 +46,7 @@ typedef enum _BOOL {
 }BOOL;
 
 /* use linux syslog */
-static BOOL use_sys_log = TRUE;
+static BOOL use_sys_log = FALSE;
 static BOOL support_sys_log;
 static int sys_log_fd;
 
@@ -85,9 +82,9 @@ static int init_sys_log (void) {
         openlog("", LOG_PID, LOG_USER);
 }
 
-static BOOL log_sys (const char* tag, const char* msg) {
+static BOOL log_sys (const char* msg) {
     if (support_sys_log) {
-        syslog(LOG_LEVEL, "[%s] %s\n", tag, msg);
+        syslog(LOG_LEVEL, "%s\n", msg);
         return TRUE;
     }
     else
@@ -152,7 +149,7 @@ static int init_file_log (void) {
     return 1;
 }
 
-static BOOL log_file (const char *tag, const char *str) {
+static BOOL log_file (const char *str) {
     struct timeval t;
     struct iovec   iov[5];
     char spid[20], time[20];
@@ -162,36 +159,34 @@ static BOOL log_file (const char *tag, const char *str) {
         return FALSE;
 
     gettimeofday(&t, 0);
-    sprintf(spid,  " %d %d ", (int)getpid(), (int)pthread_self());
+    sprintf(spid,  " %d ", (int)getpid());
     sprintf(time, " %ld ", t.tv_usec);
 
     iov[0].iov_base = time;
     iov[0].iov_len  = strlen(time);
     iov[1].iov_base = spid;
     iov[1].iov_len  = strlen(spid);
-    iov[2].iov_base = tag;
-    iov[2].iov_len  = strlen(tag);
-    iov[3].iov_base = str;
-    iov[3].iov_len  = strlen(str);
-    iov[4].iov_base = enter;
-    iov[4].iov_len  = strlen(enter);
+    iov[2].iov_base = str;
+    iov[2].iov_len  = strlen(str);
+    iov[3].iov_base = enter;
+    iov[3].iov_len  = strlen(enter);
 
     int ret = writev(file_log_fd, iov, sizeof(iov)/sizeof(struct iovec));
     if (ret < 0)
-        printf("write msg[%s : %s] fail %d : %s\n", tag, str, errno, strerror(errno));
+        printf("write msg[%s] fail %d : %s\n", str, errno, strerror(errno));
 
     return ret > 0? TRUE : FALSE;
 }
 
-static void log_local (const char *tag, const char *str) {
+static void log_local (const char *str) {
     struct timeval t;
     char spid[20], time[20];
 
     gettimeofday(&t, 0);
-    sprintf(spid, " %d %d ", (int)getpid(), (int)pthread_self());
+    sprintf(spid, " %d ", (int)getpid());
     sprintf(time, " %ld ", t.tv_usec);
 
-    printf("%s %s %s %s\n", time, spid, tag, str);
+    printf("[%s] %s : %s\n", time, spid, str);
 }
 
 static void init_log () {
@@ -210,21 +205,21 @@ void close_log () {
         close(file_log_fd);
 }
 
-static void log_msg (const char *tag, const char *msg) {
+static void log_msg (const char *msg) {
     BOOL handle = FALSE;
 
     init_log();
 
     if (use_sys_log)
-        handle = log_sys(tag, msg);
+        handle = log_sys(msg);
 
     if (use_file_log)
-        handle = log_file(tag, msg);
+        handle = log_file(msg);
 
     close_log();
 
-    if (!handle)
-        log_local(tag, msg);
+    //if (!handle)
+        log_local(msg);
 }
 
 void vlog (char *str, ...) {
@@ -238,18 +233,15 @@ void vlog (char *str, ...) {
     vsnprintf(buf, sizeof(buf), str, vlist);
     va_end(vlist);
 
-    log_msg (LOG_TAG, buf);
+    log_msg (buf);
 }
 
 /**
  * param string
- * param string
  */
 static int lua_log (lua_State *lua) {
-    const char* tag = (char*)luaL_checkstring(lua, 1);
-    const char* msg = (char*)luaL_checkstring(lua, 2);
-
-    log_msg(tag == NULL? "" : tag, msg == NULL? "" : tag);
+    const char* msg = (char*)luaL_checkstring(lua, 1);
+    log_msg(msg == NULL? "" : msg);
     return 0;
 }
 

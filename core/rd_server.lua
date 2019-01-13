@@ -3,8 +3,6 @@ local Log     = require("log")
 local PDU     = require("pdu")
 local CMD_PDU = require("cmd_pdu")
 
-local LOG_TAG = "rd_server"
-
 local function get_note_cus_cmd (suffix)
     local cmd = nil
 
@@ -22,31 +20,7 @@ local function get_note_cus_cmd (suffix)
 end
 
 local function get_note_sys_cmd (suffix)
-    local file_type, file_cmd
-
-    local type_file = io.popen("assoc ." .. suffix, "r")
-    if (type_file ~= nil) then
-        local msg = type_file:read("*l")
-
-        file_type = msg and string.match(msg, "=%a+")
-        type_file:close()
-    end
-
-    if (file_type ~= nil) then
-        local cmd_file = io.popen("ftype " .. string.sub(file_type, 2), "r")
-        if (cmd_file ~= nil) then
-            local msg = cmd_file:read("*l")
-
-            file_cmd = msg and string.match(msg, "=%a+")
-            cmd_file:close()
-        end
-    end
-
-    if (file_cmd ~= nil) then
-        return string.sub(file_cmd, 2)
-    else
-        return nil
-    end
+    return nil
 end
 
 local custom_remote_command = {
@@ -71,17 +45,18 @@ local custom_remote_command = {
 }
 
 local function get_mapped_cmd (cmd, cmd_args, cmd_path)
-    local remote_cmd = cmd
+    local remote_cmd = nil
 
     if (custom_remote_command[cmd] ~= nil) then
         remote_cmd = custom_remote_command[cmd](cmd, cmd_args, cmd_path)
-    else
-        for cmd, cmd_proc in pairs(server_cfg.remote_cmd_map) do
-            if (remote_cmd == cmd) then
-                remote_cmd = cmd_proc
-                break
-            end
-        end
+    end
+
+    if remote_cmd == nil then
+        remote_cmd = server_cfg.remote_cmd_map[cmd]
+    end
+
+    if remote_cmd == nil then
+       remote_cmd = cmd
     end
 
     return remote_cmd
@@ -108,11 +83,7 @@ local function get_local_command (cmd, cmd_args, cmd_path)
 
     cmd_args = string.gsub(cmd_args, "\\", "/")
     cmd_path = string.gsub(cmd_path, "\\", "/")
-    ext_command = " & "
-
-    target_cmd = server_cfg.remote_cmd_map[cmd]
-    target_cmd = target_cmd or cmd
-    target_cmd = target_cmd.." "..cmd_args
+    target_cmd = cmd.." "..cmd_args
 
     if (cmd_path and #cmd_path > 0) then
          target_cmd = "cd "..cmd_path..";"..target_cmd.." & "
@@ -159,7 +130,7 @@ local function handle_client (socket)
             end
         end
     else
-        Log.e(LOG_TAG, "rd_server receive illegal message")
+        Log.e("rd_server receive illegal message")
     end
 end
 
@@ -169,7 +140,7 @@ dofile(cur_path .. "/core/config.lua")
 
 local server_socket = Socket.server(GLOBAL_CONFIG.server_ip, GLOBAL_CONFIG.server_port)
 if (server_socket == nil) then
-    Log.e(LOG_TAG, "rd_server create failed")
+    Log.e("rd_server create failed")
     return
 end
 

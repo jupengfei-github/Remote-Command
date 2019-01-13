@@ -16,8 +16,6 @@
 -- Package Network Data
 --
 
-Log = require ("log")
-
 local cur_path = os.getenv("RD_ROOT_DIR")
 dofile(cur_path .. "/core/config.lua")
 
