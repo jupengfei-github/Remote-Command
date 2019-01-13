@@ -61,7 +61,7 @@ if %parse_server_ip%=="true"   set RD_SERVER_IP=%specified_server_ip%
 if %parse_server_port%=="true" set RD_SERVER_PORT=%specified_server_port%
 
 if %LUA_EXE%!="" if %param%!="" (
-    %LUA_EXE% %ROOT_DIR%/src/rd.lua %param%
+    %LUA_EXE% %ROOT_DIR%/core/rd.lua %param%
 )
 
 @echo on

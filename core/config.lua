@@ -1,4 +1,16 @@
-local global_constant_flag = {
+local function generate_constant (cfg)
+    return setmetatable({}, {
+        __index = function (t, k)
+            return cfg[k]
+        end,
+
+        __newindex = function (t, k)
+            print("Error : write read-only table")
+        end
+    })
+end
+
+GLOBAL_CONSTANT_FLAG = generate_constant({
     -- message type
     MSG_TYPE_REQ = 0x00,
     MSG_TYPE_ACK = 0x01,
@@ -17,16 +29,12 @@ local global_constant_flag = {
 
     -- predefined command
     CMD_NOTE       = 0x30,  -- open file with graphics
-}
+})
 
 local global_config = {
-    -- server ip
-    client_ip   = "-1",
-    client_port = -1, 
-
     -- client ip
-    server_ip   = "-1",
-    server_port = -1,
+    server_ip   = "",
+    server_port = 0,
 
     valid_pdu_key = {
         "versionCode",  "versionName", "msgType",  "dataType",
@@ -41,18 +49,7 @@ local global_config = {
         CMD_NOTE,
     },
 }
-
-function generate_constant (cfg) 
-    return setmetatable({}, {
-        __index = function (t, k) 
-            return cfg[k]
-        end,
-
-        __newindex = function (t, k)
-            print("Error : write read-only table")
-        end
-    })
-end
+GLOBAL_CONFIG  = generate_constant(global_config)
 
 local function check_ip_valid (ip) 
     local pattern = "^%d+%.%d+%.%d+%.%d+$"
@@ -83,15 +80,7 @@ local function check_port_valid (port_str)
     end
 end
 
-local ip   = os.getenv("RD_CLIENT_IP")
-local port = os.getenv("RD_CLIENT_PORT")
-global_config.client_ip   = check_ip_valid(ip)   and ip   or global_config.client_ip
-global_config.client_port = check_port_valid(port) and port or global_config.client_port
-
-ip   = os.getenv("RD_SERVER_IP")
-port = os.getenv("RD_SERVER_PORT")
-global_config.server_ip   = check_ip_valid(ip)     and ip   or global_config.server_ip
-global_config.server_port = check_port_valid(port) and port or global_config.server_port
-
-GLOBAL_CONSTANT_FLAG = generate_constant(global_constant_flag)
-GLOBAL_CONFIG        = generate_constant(global_config)
+local ip   = os.getenv("RD_SERVER_IP")
+local port = os.getenv("RD_SERVER_PORT")
+global_config.server_ip   = check_ip_valid(ip)     and ip   or ""
+global_config.server_port = check_port_valid(port) and port or 0

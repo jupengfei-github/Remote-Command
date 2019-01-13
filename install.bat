@@ -29,7 +29,7 @@ if "%ROOT_DIR%"=="" if "%SERVER_IP%"=="" (
 )
 
 :: lua environment
-set INIT=@%ROOT_DIR%src\lua_init.lua
+set INIT=@%ROOT_DIR%lua_init.lua
 set EXE=%ROOT_DIR%bin\lua.exe
 
 setx RD_ROOT_DIR    %ROOT_DIR%
@@ -69,8 +69,8 @@ for /f "tokens=1,2 delims=:" %%i in ('ipconfig') do (
 goto :eof
 
 :install_rd_server
-    set /p remote_path="Enter remote share path : "
-    set /p local_path="Enter local mount path  : "
+    set /p remote_path="Enter remote share path [ex: /opt/ubuntu] : "
+    set /p local_path="Enter local mount path [ex: c:] : "
 
     if "%remote_path%"=="" flag=1
     if "%local_path%"==""  flag=1
@@ -86,7 +86,7 @@ goto :eof
     ::install schedule task
     echo '======== Auto Generated,Don't Edit ============ > %start_file%
     echo Set ws=CreateObject("Wscript.Shell") >> %start_file%
-    echo ws.run "cmd /c %EXE% %ROOT_DIR%src\rd_server.lua",vbhide >> %start_file%
+    echo ws.run "cmd /c %EXE% %ROOT_DIR%core\rd_server.lua",vbhide >> %start_file%
     schtasks /create /tn rmd /tr "%start_file%" /sc onlogon
 goto :eof
 

@@ -71,17 +71,18 @@ local custom_remote_command = {
 }
 
 local function get_mapped_cmd (cmd, cmd_args, cmd_path) 
-    local remote_cmd = cmd
+    local remote_cmd = nil
 
     if (custom_remote_command[cmd] ~= nil) then
         remote_cmd = custom_remote_command[cmd](cmd, cmd_args, cmd_path)
-    else
-        for cmd, cmd_proc in pairs(server_cfg.remote_cmd_map) do
-            if (remote_cmd == cmd) then
-                remote_cmd = cmd_proc
-                break
-            end
-        end
+    end
+
+    if remote_cmd == nil then
+        remote_cmd = server_cfg.remote_cmd_map[cmd]
+    end
+
+    if remote_cmd == nil then
+        remote_cmd = cmd
     end
 
     return remote_cmd
@@ -109,10 +110,7 @@ local function get_local_command (cmd, cmd_args, cmd_path)
 
     cmd_args = string.gsub(cmd_args, "/", "\\")
     cmd_path = string.gsub(cmd_path, "/", "\\")
-
-    target_cmd = server_cfg.remote_cmd_map[cmd]
-    target_cmd = target_cmd or cmd
-    target_cmd = target_cmd.." "..cmd_args
+    target_cmd = cmd.." "..cmd_args
 
     if (cmd_path and #cmd_path > 0) then
         target_cmd = "cd /d "..cmd_path.." & start /b cmd /c "..target_cmd
@@ -164,11 +162,17 @@ local function handle_client (socket)
 end
 
 ------------------- Main Function ------------------------
+local cur_path = os.getenv("RD_ROOT_DIR")
+dofile(cur_path .. "/core/config.lua")
+
 local server_socket = Socket.server(GLOBAL_CONFIG.server_ip, GLOBAL_CONFIG.server_port)
 if (server_socket == nil) then
     Log.e(LOG_TAG, "rd_server create failed")
     return 
 end
+
+-- load server params
+dofile(cur_path .. "/core/server_params.lua")
 
 repeat 
     local socket = server_socket:listen()

@@ -54,6 +54,9 @@ else
     table.remove(arg, 1)
 end
 
+local cur_path = os.getenv("RD_ROOT_DIR")
+dofile(cur_path .. "/core/config.lua")
+
 for cmd, cmd_proc in pairs(custom_remote_command) do
     if (cmd == sub_command) then
         cmd_proc(arg)
