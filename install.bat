@@ -46,6 +46,7 @@ if %answer%==yes (
    call :install_rd_client
 )
 
+pause
 echo "installation success"
 exit /b
 
@@ -91,15 +92,9 @@ goto :eof
 goto :eof
 
 :write_server_params
-    set target_file_prefix=server_cfg.lua
-    set target_file=%ROOT_DIR%src\%target_file_prefix%
-    set bak_file=%ROOT_DIR%src\%target_file_prefix%.bak
-    set tag1=share_directory_map
-    set tag2=}
-
-    set can_write=false
-    set map=    ["%1"] = "%2",
-    set tag_prefix=["%1"]
+    set target_file_prefix=server_dirs
+    set target_file=%ROOT_DIR%config\%target_file_prefix%
+    set bak_file=%ROOT_DIR%config\%target_file_prefix%.bak
 
     for /f "delims=" %%i in (%target_file%) do (
         for /f "tokens=1,2 delims= " %%k in ("%%i") do (
@@ -107,19 +102,7 @@ goto :eof
             set segment2=%%l
         )
 
-        if !segment2!==%tag1% (
-            echo %%i   >> %bak_file%
-            echo %map% >> %bak_file%
-            set can_write=true
-        ) else (
-            if !can_write!==true (
-                echo !segment1! %tag_prefix%
-                if not !segment1!==%tag_prefix% echo %%i >> %bak_file%
-                if !segment1!==%tag2% set can_write=false
-            ) else (
-                echo %%i >> %bak_file% 
-            )
-        )
+        if !segment1! neq %1 (echo %%i >> %bak_file%)
     )
 
     del %target_file%
