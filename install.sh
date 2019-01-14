@@ -37,7 +37,6 @@ install_init_script () {
         sed -i "${line}d" $user_bashrc
     fi
 
-    echo -n >> $user_bashrc
     echo "$bashrc_cmd" >> $user_bashrc
 }
 
