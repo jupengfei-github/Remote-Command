@@ -1,3 +1,17 @@
+-- Copyright (C) 2018-2024 The Remote-Command Project
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
 local Socket  = require("lsocket")
 local Log     = require("log")
 local PDU     = require("pdu")
@@ -70,7 +84,7 @@ local custom_remote_command = {
     end,
 }
 
-local function get_mapped_cmd (cmd, cmd_args, cmd_path) 
+local function get_mapped_cmd (cmd, cmd_args, cmd_path)
     local remote_cmd = nil
 
     if (custom_remote_command[cmd] ~= nil) then
@@ -89,7 +103,7 @@ local function get_mapped_cmd (cmd, cmd_args, cmd_path)
 end
 
 local function get_mapped_path (cmd_path) 
-    local new_path = nil
+    local new_path = cmd_path
 
     for remote_path, local_path in pairs(server_cfg.share_directory_map) do
         if (string.match(cmd_path, "^" .. remote_path)) then
@@ -106,10 +120,11 @@ local function get_local_command (cmd, cmd_args, cmd_path)
     local target_cmd = ""
 
     cmd_path = get_mapped_path(cmd_path)
-    cmd      = get_mapped_cmd(cmd, cmd_args, cmd_path)
+	cmd_path = string.gsub(cmd_path, "/", "\\")
 
+	cmd      = get_mapped_cmd(cmd, cmd_args, cmd_path)
     cmd_args = string.gsub(cmd_args, "/", "\\")
-    cmd_path = string.gsub(cmd_path, "/", "\\")
+
     target_cmd = cmd.." "..cmd_args
 
     if (cmd_path and #cmd_path > 0) then

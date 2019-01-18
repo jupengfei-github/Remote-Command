@@ -99,12 +99,12 @@ goto :eof
     for /f "delims=" %%i in (%target_file%) do (
         for /f "tokens=1,2 delims= " %%k in ("%%i") do (
             set segment1=%%k
-            set segment2=%%l
         )
 
         if !segment1! neq %1 (echo %%i >> %bak_file%)
     )
 
+    echo %1 %2>>%bak_file%
     del %target_file%
     ren %bak_file% %target_file_prefix%
 goto :eof
