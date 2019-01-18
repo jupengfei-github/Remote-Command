@@ -1,6 +1,3 @@
 # remote_command local_command
 # file  subl
-
-# default must
-explore xdg-open
 subl    subl

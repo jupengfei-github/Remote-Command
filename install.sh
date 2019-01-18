@@ -2,11 +2,11 @@
 
 current_path=`pwd`
 user_bashrc=$HOME/.bashrc
-server_dirs=config/server_dirs
+server_dir=config/server_dirs
 
 write_server_params () {
-    local remote_path=$1 local_path1=$2
-    local target_file=$current_path/$server_dirs
+    local remote_path=$1 local_path=$2
+    local target_file=$current_path/$server_dir
 
     sed -i "s:$remote_path.*::;d" $target_file 2>/dev/null 1>/dev/null
 
@@ -74,4 +74,4 @@ fi
 
 unset current_path
 unset user_bashrc
-unset server_dirs
+unset server_dir
