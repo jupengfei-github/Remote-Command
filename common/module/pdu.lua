@@ -15,7 +15,7 @@
 Log = require ("log")
 
 local cur_path = os.getenv("RD_ROOT_DIR")
-dofile(cur_path .. "/core/config.lua")
+dofile(cur_path .. "/common/core/config.lua")
 
 local PDU_DELIMETER = "\t "
 local PDU_KEYVALUE  = ":"
