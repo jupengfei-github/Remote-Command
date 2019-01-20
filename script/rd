@@ -46,7 +46,7 @@ if [ -n "$OPTIND" ]; then
 fi
 
 if [ -n "$LUA_EXE" ] && [ $# -gt 0 ]; then
-    $LUA_EXE $RD_ROOT_DIR/core/rd.lua $@
+    $LUA_EXE $RD_ROOT_DIR/common/core/rd.lua $@
 fi
 
 unset specified_server_ip

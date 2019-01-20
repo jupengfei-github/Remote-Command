@@ -20,7 +20,9 @@ local USER_C_PATHS   = {
 
 local USER_LUA_PATHS = {
     RD_ROOT_DIR .. "/core/?.lua",
+	RD_ROOT_DIR .. "/common/core/?.lua",
     RD_ROOT_DIR .. "/module/?.lua",
+	RD_ROOT_DIR .. "/common/module/?.lua"
 }
 
 -- cpath

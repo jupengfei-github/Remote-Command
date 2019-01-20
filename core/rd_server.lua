@@ -154,7 +154,7 @@ end
 
 ------------------- Main Function ------------------------
 local cur_path = os.getenv("RD_ROOT_DIR")
-dofile(cur_path .. "/core/config.lua")
+dofile(cur_path .. "/common/core/config.lua")
 
 local server_socket = Socket.server(GLOBAL_CONFIG.server_ip, GLOBAL_CONFIG.server_port)
 if (server_socket == nil) then

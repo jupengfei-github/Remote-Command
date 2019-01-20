@@ -39,9 +39,9 @@ local function parse_server (path)
 end
 
 local cur_path = os.getenv("RD_ROOT_DIR")
-local dirs = cur_path .. "/config/server_dirs"
-local cmds = cur_path .. "/config/server_cmds"
-local maps = cur_path .. "/config/server_maps"
+local dirs = cur_path .. "/common/config/server_dirs"
+local cmds = cur_path .. "/common/config/server_cmds"
+local maps = cur_path .. "/common/config/server_maps"
 
 server_cfg = {
     ["remote_cmd_map"]      = parse_server(cmds),  -- offer avalable commands
